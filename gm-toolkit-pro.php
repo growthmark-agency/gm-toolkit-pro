@@ -3,7 +3,7 @@
  * Plugin Name: GM Toolkit Pro — E-Commerce & Automation Engine
  * Plugin URI: https://growthmark.pro
  * Description: The ultimate international-grade WooCommerce automation suite: 1-Click fast checkout, Global Abandoned Cart recovery, instant Telegram merchant alerts, Google Sheets live CRM, Steadfast & Pathao courier booking, and SMS notifications.
- * Version: 2.2.0
+ * Version: 2.3.0
  * Author: Tamim Hasan
  * Author URI: https://tamim.growthmark.pro
  * Text Domain: gm-toolkit-pro
@@ -16,25 +16,23 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GM_TOOLKIT_VERSION', '2.2.0');
+define('GM_TOOLKIT_VERSION', '2.3.0');
 define('GM_TOOLKIT_FILE', __FILE__);
 
 /**
  * ============================================================================
- * 1. GITHUB REMOTE AUTO-UPDATER (ZERO-COST ENTERPRISE UPDATE PIPELINE)
+ * 1. GITHUB REMOTE AUTO-UPDATER (UNDER-THE-HOOD ENGINE)
  * ============================================================================
  */
 class GM_GitHub_Updater {
     private $slug;
     private $plugin_file;
-    private $github_username;
-    private $github_repo;
+    private $github_username = 'growthmark-agency';
+    private $github_repo     = 'gm-toolkit-pro';
 
     public function __construct($plugin_file) {
-        $this->plugin_file     = $plugin_file;
-        $this->slug            = plugin_basename($plugin_file);
-        $this->github_username = get_option('gm_gh_user', 'growthmark-agency');
-        $this->github_repo     = get_option('gm_gh_repo', 'gm-toolkit-pro');
+        $this->plugin_file = $plugin_file;
+        $this->slug        = plugin_basename($plugin_file);
 
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'));
         add_filter('plugins_api', array($this, 'plugin_info_popup'), 10, 3);
@@ -91,10 +89,10 @@ class GM_GitHub_Updater {
                 $res->name          = 'GM Toolkit Pro — GrowthMark E-Commerce Engine';
                 $res->slug          = 'gm-toolkit-pro';
                 $res->version       = ltrim($remote['tag_name'], 'v');
-                $res->author        = '<a href="https://growthmark.pro">GrowthMark Agency (Tamim Hasan)</a>';
+                $res->author        = '<a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a> (GrowthMark)';
                 $res->homepage      = 'https://growthmark.pro';
                 $res->sections      = array(
-                    'description' => 'Official Enterprise E-Commerce Automation Suite for WooCommerce by GrowthMark Agency.',
+                    'description' => 'Official Enterprise E-Commerce Automation Suite for WooCommerce by GrowthMark.',
                     'changelog'   => isset($remote['body']) ? nl2br(esc_html($remote['body'])) : 'Latest stability and performance enhancements.'
                 );
                 return $res;
@@ -123,7 +121,7 @@ class GM_GitHub_Updater {
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
         if (!empty($data) && is_array($data)) {
-            set_transient($transient_key, $data, 12 * HOUR_IN_SECONDS);
+            set_transient($transient_key, $data, 1 * HOUR_IN_SECONDS);
             return $data;
         }
 
@@ -189,10 +187,6 @@ class GM_Admin_Controller {
 
         // Abandoned Cart
         register_setting('gm_pro_settings', 'gm_ab_active', 'intval');
-
-        // GitHub Repository
-        register_setting('gm_pro_settings', 'gm_gh_user', 'sanitize_text_field');
-        register_setting('gm_pro_settings', 'gm_gh_repo', 'sanitize_text_field');
     }
 
     public static function test_telegram_connection() {
@@ -204,19 +198,19 @@ class GM_Admin_Controller {
             wp_send_json_error(array('message' => 'Bot Token এবং Chat ID দুটোই সঠিকভাবে লিখুন।'));
         }
 
-        $msg = "🎉 *অভিনন্দন! টেলিগ্রাম বট সফলভাবে কানেক্ট হয়েছে!*\n\n";
-        $msg .= "🚀 *GM Toolkit Pro v2.2.0* এখন সম্পূর্ণ লাইভ।\n";
-        $msg .= "🆔 *টেস্ট আইডি:* #TEST-" . rand(1000, 9999) . "\n";
-        $msg .= "👤 *কাস্টমার:* তামিম হাসান (টেস্ট)\n";
-        $msg .= "📞 *ফোন:* `01700000000`\n";
-        $msg .= "📍 *ঠিকানা:* ধানমন্ডি, ঢাকা\n";
-        $msg .= "📦 *পণ্য:* ১ কেজি স্পেশাল কম্বো\n";
-        $msg .= "💰 *মোট বিল:* ৳১,০৫০ (COD)\n";
-        $msg .= "⏰ *সময়:* " . current_time('d-M-Y h:i A') . "\n";
-        $msg .= "\n⚡ _GrowthMark Agency Automation Engine_";
+        $msg = "🎉 <b>অভিনন্দন! টেলিগ্রাম বট সফলভাবে কানেক্ট হয়েছে!</b>\n\n";
+        $msg .= "🚀 <b>GM Toolkit Pro v2.3.0</b> এখন সম্পূর্ণ লাইভ।\n";
+        $msg .= "🆔 <b>টেস্ট আইডি:</b> #TEST-" . rand(1000, 9999) . "\n";
+        $msg .= "👤 <b>কাস্টমার:</b> তামিম হাসান (টেস্ট)\n";
+        $msg .= "📞 <b>ফোন:</b> <code>01700000000</code>\n";
+        $msg .= "📍 <b>ঠিকানা:</b> ধানমন্ডি, ঢাকা\n";
+        $msg .= "📦 <b>পণ্য:</b> ১ কেজি স্পেশাল কম্বো\n";
+        $msg .= "💰 <b>মোট বিল:</b> ৳১,০৫০ (COD)\n";
+        $msg .= "⏰ <b>সময়:</b> " . current_time('d-M-Y h:i A') . "\n";
+        $msg .= "\n⚡ <i>GrowthMark Automation Engine</i>";
 
         $res = wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-            'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'Markdown'),
+            'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML'),
             'timeout' => 8
         ));
 
@@ -264,7 +258,7 @@ class GM_Admin_Controller {
             wp_send_json_error(array('message' => 'গুগল শিট সংযোগ ব্যর্থ: ' . $res->get_error_message()));
         }
 
-        wp_send_json_success(array('message' => '✅ সফল! আপনার গুগল শিটে টেস্ট ডাটার নতুন রো যোগ হয়েছে। শিট চেক করুন!'));
+        wp_send_json_success(array('message' => '✅ সফল! আপনার গুগল শিটে টেস্ট ডাটার নতুন রো যোগ হয়েছে।'));
     }
 
     public static function clear_abandoned_leads() {
@@ -279,13 +273,13 @@ class GM_Admin_Controller {
         if (!is_array($leads)) $leads = array();
         ?>
         <style>
-            .gm-dash-wrap { max-width: 1200px; margin: 20px 20px 0 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1E293B; }
-            .gm-top-banner { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #FFF; padding: 25px 30px; border-radius: 20px; box-shadow: 0 12px 30px rgba(15,23,42,0.15); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
-            .gm-top-banner h2 { margin: 0 0 6px 0; font-size: 26px; font-weight: 800; color: #FFF !important; display: flex; align-items: center; gap: 10px; }
+            .gm-dash-wrap { width: 100%; box-sizing: border-box; padding-right: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1E293B; margin-top: 15px; }
+            .gm-top-banner { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #FFF; padding: 24px 30px; border-radius: 20px; box-shadow: 0 12px 30px rgba(15,23,42,0.12); margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+            .gm-top-banner h2 { margin: 0 0 4px 0; font-size: 25px; font-weight: 800; color: #FFF !important; display: flex; align-items: center; gap: 10px; }
             .gm-tag-pro { background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color: #FFF; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px; }
             
-            .gm-main-layout { display: grid; grid-template-columns: 260px 1fr; gap: 25px; align-items: start; }
-            @media (max-width: 900px) { .gm-main-layout { grid-template-columns: 1fr; } }
+            .gm-main-layout { display: grid; grid-template-columns: 270px 1fr; gap: 22px; align-items: start; width: 100%; }
+            @media (max-width: 960px) { .gm-main-layout { grid-template-columns: 1fr; } }
             
             .gm-nav-menu { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
             .gm-nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; color: #475569; text-decoration: none; cursor: pointer; transition: all 0.2s; margin-bottom: 4px; }
@@ -295,7 +289,7 @@ class GM_Admin_Controller {
 
             .gm-panel { display: none; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
             .gm-panel.active { display: block; }
-            .gm-panel-header { border-bottom: 1px solid #F1F5F9; padding-bottom: 18px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+            .gm-panel-header { border-bottom: 1px solid #F1F5F9; padding-bottom: 18px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
             .gm-panel-header h3 { margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; }
             .gm-panel-header p { margin: 0; font-size: 13px; color: #64748B; }
 
@@ -306,29 +300,36 @@ class GM_Admin_Controller {
             .gm-form-group input:focus, .gm-form-group select:focus, .gm-form-group textarea:focus { border-color: #D97706; box-shadow: 0 0 0 3px rgba(217,119,6,0.15); }
             .gm-btn-test { background: #0F172A; color: #FFFFFF; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
             .gm-btn-test:hover { background: #1E293B; transform: translateY(-1px); }
-            .gm-save-bar { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 18px 24px; border-radius: 0 0 20px 20px; margin: 30px -30px -30px -30px; display: flex; justify-content: space-between; align-items: center; }
+            .gm-save-bar { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 18px 24px; border-radius: 0 0 20px 20px; margin: 30px -30px -30px -30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+            
+            .gm-footer-credits { margin-top: 25px; padding: 16px 20px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 13px; color: #64748B; }
+            .gm-footer-credits a { color: #D97706; text-decoration: none; font-weight: 700; }
         </style>
 
         <div class="gm-dash-wrap">
             
+            <!-- Top Master Header -->
             <div class="gm-top-banner">
                 <div>
-                    <h2>🚀 GM Toolkit Pro <span class="gm-tag-pro">v2.2.0 Enterprise</span></h2>
+                    <h2>🚀 GM Toolkit Pro <span class="gm-tag-pro">v2.3.0 Enterprise</span></h2>
                     <p style="margin:0; font-size:14px; color:#94A3B8;">GrowthMark — Master E-Commerce & Order Automation Engine</p>
                 </div>
-                <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:10px 18px; border-radius:12px; font-size:13px; color:#FDE68A;">
-                    Shortcode: <code style="background:#0F172A; color:#FFF; padding:3px 8px; border-radius:6px;">[gm_checkout]</code>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:8px 16px; border-radius:12px; font-size:13px; color:#FDE68A;">
+                        Shortcode: <code style="background:#0F172A; color:#FFF; padding:3px 8px; border-radius:6px;">[gm_checkout]</code>
+                    </div>
                 </div>
             </div>
 
             <?php if (isset($_GET['settings-updated'])) : ?>
                 <div style="padding:14px 20px; border-left:4px solid #059669; border-radius:12px; margin-bottom:20px; background:#ECFDF5; color:#065F46; font-size:14px; font-weight:700;">
-                    ✅ Settings updated successfully! All active webhooks and automation triggers are live.
+                    ✅ Settings updated successfully! All automations are active and running.
                 </div>
             <?php endif; ?>
 
             <div class="gm-main-layout">
                 
+                <!-- Left Navigation Bar -->
                 <div class="gm-nav-menu">
                     <div class="gm-nav-item active" onclick="gmSwitchTab('telegram', this)">
                         <span class="gm-nav-icon">📱</span> Telegram Alerts
@@ -348,11 +349,9 @@ class GM_Admin_Controller {
                     <div class="gm-nav-item" onclick="gmSwitchTab('shortcode', this)">
                         <span class="gm-nav-icon">⚡</span> 1-Click Checkout Setup
                     </div>
-                    <div class="gm-nav-item" onclick="gmSwitchTab('github', this)">
-                        <span class="gm-nav-icon">🔄</span> GitHub Remote Updater
-                    </div>
                 </div>
 
+                <!-- Right Form Content Panels -->
                 <div>
                     <form method="post" action="options.php" id="gmMainForm">
                         <?php settings_fields('gm_pro_settings'); ?>
@@ -437,7 +436,6 @@ class GM_Admin_Controller {
                                 </div>
                             </div>
 
-                            <!-- Steadfast -->
                             <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:20px; margin-bottom:20px;">
                                 <h4 style="margin:0 0 12px 0; font-size:16px; color:#0F172A; display:flex; align-items:center; gap:8px;">
                                     <span>📦</span> Steadfast Courier API
@@ -462,7 +460,6 @@ class GM_Admin_Controller {
                                 </label>
                             </div>
 
-                            <!-- Pathao -->
                             <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:20px;">
                                 <h4 style="margin:0 0 12px 0; font-size:16px; color:#0F172A; display:flex; align-items:center; gap:8px;">
                                     <span>🛵</span> Pathao Courier API
@@ -498,7 +495,7 @@ class GM_Admin_Controller {
                             <div class="gm-panel-header">
                                 <div>
                                     <h3>🛒 Global Abandoned Leads Live CRM</h3>
-                                    <p>Automatically captures visitors typing contact details on ANY checkout form or product page.</p>
+                                    <p>Captured visitors who typed contact details on any checkout form or product page.</p>
                                 </div>
                                 <?php if (!empty($leads)) : ?>
                                     <button type="button" onclick="gmClearLeads()" style="background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer;">
@@ -509,7 +506,7 @@ class GM_Admin_Controller {
 
                             <label class="gm-toggle-box">
                                 <input type="checkbox" name="gm_ab_active" value="1" <?php checked(1, get_option('gm_ab_active', 1), true); ?> />
-                                <span>Enable Global Abandoned Cart Recovery Engine (All Pages)</span>
+                                <span>Enable Global Abandoned Cart Recovery Tracker (All Pages)</span>
                             </label>
 
                             <?php if (empty($leads)) : ?>
@@ -626,47 +623,19 @@ class GM_Admin_Controller {
                             </div>
                         </div>
 
-                        <!-- 7. GITHUB REMOTE UPDATER TAB -->
-                        <div id="tab-github" class="gm-panel">
-                            <div class="gm-panel-header">
-                                <div>
-                                    <h3>🔄 GitHub Remote Auto-Updater Pipeline</h3>
-                                    <p>Push new plugin releases to all client sites instantly with zero server cost.</p>
-                                </div>
-                            </div>
-
-                            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:16px; padding:20px; margin-bottom:20px;">
-                                <h4 style="margin:0 0 10px 0; color:#0F172A; font-size:16px;">GitHub Repository Target</h4>
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                                    <div class="gm-form-group">
-                                        <label>GitHub Username / Org:</label>
-                                        <input type="text" name="gm_gh_user" value="<?php echo esc_attr(get_option('gm_gh_user', 'growthmark-agency')); ?>" placeholder="growthmark-agency" />
-                                    </div>
-                                    <div class="gm-form-group">
-                                        <label>GitHub Repository Name:</label>
-                                        <input type="text" name="gm_gh_repo" value="<?php echo esc_attr(get_option('gm_gh_repo', 'gm-toolkit-pro')); ?>" placeholder="gm-toolkit-pro" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:16px; padding:20px;">
-                                <h4 style="margin:0 0 8px 0; color:#1E40AF; font-size:15px;">🚀 How Remote Zero-Cost Updates Work:</h4>
-                                <ol style="margin:0; padding-left:20px; font-size:13px; color:#1E3A8A; line-height:1.6;">
-                                    <li>Create a GitHub Release on <code>github.com/<?php echo esc_attr(get_option('gm_gh_user', 'growthmark-agency')); ?>/<?php echo esc_attr(get_option('gm_gh_repo', 'gm-toolkit-pro')); ?></code> with tag (e.g. <code>v2.3.0</code>).</li>
-                                    <li>Attach <code>gm-toolkit-pro.zip</code> to the release.</li>
-                                    <li>All client WordPress sites will automatically detect the new release and show an <strong>"Update Now"</strong> button!</li>
-                                </ol>
-                            </div>
-
-                            <div class="gm-save-bar">
-                                <span style="font-size:13px; color:#64748B;">Zero server load, hosted 100% free on GitHub global CDN.</span>
-                                <?php submit_button('💾 Save Settings', 'primary large', 'submit', false); ?>
-                            </div>
-                        </div>
-
                     </form>
                 </div>
 
+            </div>
+
+            <!-- Footer Branding & Credits Bar -->
+            <div class="gm-footer-credits">
+                <div>
+                    <strong>GM Toolkit Pro</strong> v2.3.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
+                </div>
+                <div>
+                    Powered by <a href="https://growthmark.pro" target="_blank">GrowthMark</a>
+                </div>
             </div>
 
         </div>
@@ -792,31 +761,32 @@ class GM_Core_Engine {
     public static function inject_global_abandoned_listener() {
         if (is_admin()) return;
         if (!get_option('gm_ab_active', 1)) return;
+        $ajax_url = admin_url('admin-ajax.php');
         ?>
         <script id="gm-global-abandoned-tracker">
         (function() {
             let gmTracked = false;
-            function gmCapture(phone, name, product) {
+            function gmCapture(phone, name) {
                 if (gmTracked) return;
                 const clean = phone.replace(/[^0-9]/g, '');
-                if (clean.length === 11 && clean.startsWith('01')) {
+                if (clean.length >= 11 && clean.startsWith('01')) {
                     gmTracked = true;
-                    const fd = new FormData();
-                    fd.append('action', 'gm_capture_abandoned');
-                    fd.append('name', name || 'Guest Visitor');
-                    fd.append('phone', clean);
-                    fd.append('product_name', product || document.title || 'Landing Page Product');
+                    const params = new URLSearchParams();
+                    params.append('action', 'gm_capture_abandoned');
+                    params.append('name', name || 'Guest Visitor');
+                    params.append('phone', clean);
+                    params.append('product_name', document.title || 'Landing Page Product');
                     
-                    if (navigator.sendBeacon) {
-                        navigator.sendBeacon('<?php echo admin_url("admin-ajax.php"); ?>', fd);
-                    } else {
-                        fetch('<?php echo admin_url("admin-ajax.php"); ?>', { method: 'POST', body: fd });
-                    }
+                    fetch('<?php echo esc_url($ajax_url); ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString(),
+                        keepalive: true
+                    }).catch(function(e){});
                 }
             }
 
             function gmAttachListeners() {
-                // Listen to all phone inputs across any theme/plugin/custom HTML
                 const phoneSelectors = 'input[type="tel"], input[name*="phone"], input[id*="phone"], input[name*="billing_phone"]';
                 const nameSelectors  = 'input[name*="name"], input[id*="name"], input[name*="billing_first_name"]';
                 
@@ -833,6 +803,7 @@ class GM_Core_Engine {
                     }
 
                     phoneEl.addEventListener('blur', checkAndSend);
+                    phoneEl.addEventListener('change', checkAndSend);
                     phoneEl.addEventListener('input', function() {
                         if (this.value.replace(/[^0-9]/g, '').length === 11) {
                             checkAndSend();
@@ -846,7 +817,7 @@ class GM_Core_Engine {
             } else {
                 gmAttachListeners();
             }
-            setInterval(gmAttachListeners, 2000); // Dynamic checkout re-check
+            setInterval(gmAttachListeners, 1500);
         })();
         </script>
         <?php
@@ -869,9 +840,9 @@ class GM_Core_Engine {
                 wp_send_json_success();
             }
 
-            $name    = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : 'Guest Visitor';
-            $phone   = isset($_POST['phone']) ? sanitize_text_field($_POST['phone']) : '';
-            $product = isset($_POST['product_name']) ? sanitize_text_field($_POST['product_name']) : '১ কেজি স্পেশাল কম্বো';
+            $name    = isset($_REQUEST['name']) ? sanitize_text_field($_REQUEST['name']) : 'Guest Visitor';
+            $phone   = isset($_REQUEST['phone']) ? sanitize_text_field($_REQUEST['phone']) : '';
+            $product = isset($_REQUEST['product_name']) ? sanitize_text_field($_REQUEST['product_name']) : '১ কেজি স্পেশাল কম্বো';
 
             $clean_phone = preg_replace('/[^0-9]/', '', $phone);
             if (empty($clean_phone) || strlen($clean_phone) < 11) {
@@ -882,7 +853,6 @@ class GM_Core_Engine {
             $leads = get_option('gm_abandoned_leads_log', array());
             if (!is_array($leads)) $leads = array();
             
-            // Check if phone already captured in last 10 mins
             $exists = false;
             foreach ($leads as $l) {
                 if ($l['phone'] === $clean_phone && (time() - $l['timestamp']) < 600) {
@@ -910,15 +880,15 @@ class GM_Core_Engine {
                 if (!empty($token) && !empty($chat_id)) {
                     $wa_link = "https://wa.me/88{$clean_phone}";
 
-                    $msg = "⚠️ *এবান্ডন্ড কার্ট অ্যালার্ট! (Abandoned Lead)*\n\n";
-                    $msg .= "👤 *কাস্টমার:* {$name}\n";
-                    $msg .= "📞 *ফোন:* `{$clean_phone}`\n";
-                    $msg .= "📦 *ইন্টারেস্টেড পণ্য:* {$product}\n";
-                    $msg .= "⏰ *সময়:* " . current_time('d-M-Y h:i A') . "\n";
-                    $msg .= "\n💬 [WhatsApp এ মেসেজ দিন]({$wa_link}) | 📞 কল করে সেলস ক্লোজ করুন!";
+                    $msg = "⚠️ <b>এবান্ডন্ড কার্ট অ্যালার্ট! (Abandoned Lead)</b>\n\n";
+                    $msg .= "👤 <b>কাস্টমার:</b> " . esc_html($name) . "\n";
+                    $msg .= "📞 <b>ফোন:</b> <code>{$clean_phone}</code>\n";
+                    $msg .= "📦 <b>ইন্টারেস্টেড পণ্য:</b> " . esc_html($product) . "\n";
+                    $msg .= "⏰ <b>সময়:</b> " . current_time('d-M-Y h:i A') . "\n";
+                    $msg .= "\n💬 <a href='{$wa_link}'>WhatsApp এ মেসেজ দিন</a> | 📞 কল করে সেলস ক্লোজ করুন!";
 
                     wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'Markdown', 'disable_web_page_preview' => true),
+                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
                         'timeout' => 5,
                         'blocking' => false
                     ));
@@ -1067,18 +1037,18 @@ class GM_Core_Engine {
                     $clean_p = preg_replace('/[^0-9]/', '', $phone);
                     $wa_link = "https://wa.me/88{$clean_p}";
 
-                    $msg = "🔔 *নতুন কনফার্মড অর্ডার! (GM Toolkit Pro)*\n\n";
-                    $msg .= "🆔 *অর্ডার ID:* #{$order_id}\n";
-                    $msg .= "👤 *কাস্টমার:* {$name}\n";
-                    $msg .= "📞 *ফোন:* `{$phone}`\n";
-                    $msg .= "📍 *ঠিকানা:* {$address}\n";
-                    $msg .= "📦 *পণ্য:* {$products_str}\n";
-                    $msg .= "💰 *মোট বিল:* ৳{$total} (COD)\n";
-                    $msg .= "⏰ *সময়:* " . current_time('d-M-Y h:i A') . "\n";
-                    $msg .= "\n💬 [WhatsApp মেসেজ দিন]({$wa_link}) | ⚡ _GrowthMark Auto Engine_";
+                    $msg = "🔔 <b>নতুন কনফার্মড অর্ডার! (GM Toolkit Pro)</b>\n\n";
+                    $msg .= "🆔 <b>অর্ডার ID:</b> #{$order_id}\n";
+                    $msg .= "👤 <b>কাস্টমার:</b> " . esc_html($name) . "\n";
+                    $msg .= "📞 <b>ফোন:</b> <code>{$phone}</code>\n";
+                    $msg .= "📍 <b>ঠিকানা:</b> " . esc_html($address) . "\n";
+                    $msg .= "📦 <b>পণ্য:</b> " . esc_html($products_str) . "\n";
+                    $msg .= "💰 <b>মোট বিল:</b> ৳{$total} (COD)\n";
+                    $msg .= "⏰ <b>সময়:</b> " . current_time('d-M-Y h:i A') . "\n";
+                    $msg .= "\n💬 <a href='{$wa_link}'>WhatsApp মেসেজ দিন</a> | ⚡ <i>GrowthMark Auto Engine</i>";
 
                     wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'Markdown', 'disable_web_page_preview' => true),
+                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
                         'timeout' => 5,
                         'blocking' => false
                     ));
