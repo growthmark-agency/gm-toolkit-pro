@@ -33,7 +33,7 @@ class GM_GitHub_Updater {
     public function __construct($plugin_file) {
         $this->plugin_file     = $plugin_file;
         $this->slug            = plugin_basename($plugin_file);
-        $this->github_username = get_option('gm_gh_user', 'GrowthMarkAgency');
+        $this->github_username = get_option('gm_gh_user', 'growthmark-agency');
         $this->github_repo     = get_option('gm_gh_repo', 'gm-toolkit-pro');
 
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'));
@@ -640,7 +640,7 @@ class GM_Admin_Controller {
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                                     <div class="gm-form-group">
                                         <label>GitHub Username / Org:</label>
-                                        <input type="text" name="gm_gh_user" value="<?php echo esc_attr(get_option('gm_gh_user', 'GrowthMarkAgency')); ?>" placeholder="GrowthMarkAgency" />
+                                        <input type="text" name="gm_gh_user" value="<?php echo esc_attr(get_option('gm_gh_user', 'growthmark-agency')); ?>" placeholder="growthmark-agency" />
                                     </div>
                                     <div class="gm-form-group">
                                         <label>GitHub Repository Name:</label>
@@ -652,7 +652,7 @@ class GM_Admin_Controller {
                             <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:16px; padding:20px;">
                                 <h4 style="margin:0 0 8px 0; color:#1E40AF; font-size:15px;">🚀 How Remote Zero-Cost Updates Work:</h4>
                                 <ol style="margin:0; padding-left:20px; font-size:13px; color:#1E3A8A; line-height:1.6;">
-                                    <li>Create a GitHub Release on <code>github.com/<?php echo esc_attr(get_option('gm_gh_user', 'GrowthMarkAgency')); ?>/<?php echo esc_attr(get_option('gm_gh_repo', 'gm-toolkit-pro')); ?></code> with tag (e.g. <code>v2.3.0</code>).</li>
+                                    <li>Create a GitHub Release on <code>github.com/<?php echo esc_attr(get_option('gm_gh_user', 'growthmark-agency')); ?>/<?php echo esc_attr(get_option('gm_gh_repo', 'gm-toolkit-pro')); ?></code> with tag (e.g. <code>v2.3.0</code>).</li>
                                     <li>Attach <code>gm-toolkit-pro.zip</code> to the release.</li>
                                     <li>All client WordPress sites will automatically detect the new release and show an <strong>"Update Now"</strong> button!</li>
                                 </ol>
