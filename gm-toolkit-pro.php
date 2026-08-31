@@ -2,8 +2,8 @@
 /**
  * Plugin Name: GM Toolkit Pro — E-Commerce & Automation Engine
  * Plugin URI: https://growthmark.pro
- * Description: The ultimate international-grade WooCommerce automation suite: 1-Click fast checkout, Global Abandoned Cart recovery, instant Telegram merchant alerts, Google Sheets live CRM, Steadfast & Pathao courier booking, and SMS notifications.
- * Version: 2.3.0
+ * Description: The ultimate international-grade WooCommerce automation suite: 1-Click fast checkout, 2-Stage Global Abandoned Cart recovery, instant Telegram merchant alerts, Google Sheets live CRM, Steadfast & Pathao courier booking, and SMS notifications.
+ * Version: 2.4.0
  * Author: Tamim Hasan
  * Author URI: https://tamim.growthmark.pro
  * Text Domain: gm-toolkit-pro
@@ -16,12 +16,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GM_TOOLKIT_VERSION', '2.3.0');
+define('GM_TOOLKIT_VERSION', '2.4.0');
 define('GM_TOOLKIT_FILE', __FILE__);
 
 /**
  * ============================================================================
- * 1. GITHUB REMOTE AUTO-UPDATER (UNDER-THE-HOOD ENGINE)
+ * 1. GITHUB PRIVATE REPO REMOTE AUTO-UPDATER
  * ============================================================================
  */
 class GM_GitHub_Updater {
@@ -29,6 +29,7 @@ class GM_GitHub_Updater {
     private $plugin_file;
     private $github_username = 'growthmark-agency';
     private $github_repo     = 'gm-toolkit-pro';
+    private $api_token       = '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';
 
     public function __construct($plugin_file) {
         $this->plugin_file = $plugin_file;
@@ -36,6 +37,7 @@ class GM_GitHub_Updater {
 
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_update'));
         add_filter('plugins_api', array($this, 'plugin_info_popup'), 10, 3);
+        add_filter('http_request_args', array($this, 'attach_github_token_to_download'), 10, 2);
     }
 
     public function check_update($transient) {
@@ -52,7 +54,7 @@ class GM_GitHub_Updater {
                     if (!empty($remote_data['assets'])) {
                         foreach ($remote_data['assets'] as $asset) {
                             if (substr($asset['name'], -4) === '.zip') {
-                                $download_url = $asset['browser_download_url'];
+                                $download_url = $asset['url']; // GitHub API asset endpoint
                                 break;
                             }
                         }
@@ -75,6 +77,15 @@ class GM_GitHub_Updater {
         } catch (\Throwable $e) {}
 
         return $transient;
+    }
+
+    public function attach_github_token_to_download($args, $url) {
+        if (strpos($url, 'api.github.com/repos/' . $this->github_username . '/' . $this->github_repo) !== false) {
+            $args['headers']['Authorization'] = 'Bearer ' . $this->api_token;
+            $args['headers']['Accept']        = 'application/octet-stream';
+            $args['headers']['User-Agent']    = 'GM-Toolkit-Pro-Updater';
+        }
+        return $args;
     }
 
     public function plugin_info_popup($res, $action, $args) {
@@ -111,8 +122,12 @@ class GM_GitHub_Updater {
 
         $url = "https://api.github.com/repos/{$this->github_username}/{$this->github_repo}/releases/latest";
         $response = wp_remote_get($url, array(
-            'headers' => array('User-Agent' => 'GM-Toolkit-Pro-Updater'),
-            'timeout' => 5
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->api_token,
+                'Accept'        => 'application/vnd.github.v3+json',
+                'User-Agent'    => 'GM-Toolkit-Pro-Updater'
+            ),
+            'timeout' => 8
         ));
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
@@ -144,49 +159,45 @@ class GM_Admin_Controller {
     }
 
     public static function add_menu_page() {
+        // GrowthMark Custom Rocket SVG Icon (Base64 Encoded for crisp vector display)
+        $svg_icon = 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#F59E0B"><path d="M13.13 2.188a1 1 0 0 0-1.652-.087L7.545 7.425a1 1 0 0 0-.214.656v3.298a1 1 0 0 0 .348.757l4.083 3.63a1 1 0 0 0 1.488-.198l4.475-5.967a1 1 0 0 0 .175-.688V5.614a1 1 0 0 0-.353-.762l-4.552-2.664zM5.5 15.5a2 2 0 1 1 4 0 2 2 0 0 1-4 0zm10 2a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"/></svg>');
+
         add_menu_page(
             'GM Toolkit Pro',
             'GM Toolkit Pro',
             'manage_options',
             'gm-toolkit-pro',
             array(__CLASS__, 'render_admin_dashboard'),
-            'dashicons-superhero-alt',
+            $svg_icon,
             56
         );
     }
 
     public static function register_all_settings() {
-        // Telegram
         register_setting('gm_pro_settings', 'gm_tg_active', 'intval');
         register_setting('gm_pro_settings', 'gm_tg_token', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_tg_chat_id', 'sanitize_text_field');
 
-        // Google Sheets
         register_setting('gm_pro_settings', 'gm_gs_active', 'intval');
         register_setting('gm_pro_settings', 'gm_gs_webhook', 'esc_url_raw');
 
-        // Steadfast Courier
         register_setting('gm_pro_settings', 'gm_sf_active', 'intval');
         register_setting('gm_pro_settings', 'gm_sf_key', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_sf_secret', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_sf_autobook', 'intval');
 
-        // Pathao Courier
         register_setting('gm_pro_settings', 'gm_pt_active', 'intval');
         register_setting('gm_pro_settings', 'gm_pt_client_id', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_pt_client_secret', 'sanitize_text_field');
-        register_setting('gm_pro_settings', 'gm_pt_username', 'sanitize_text_field');
-        register_setting('gm_pro_settings', 'gm_pt_password', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_pt_store_id', 'sanitize_text_field');
 
-        // SMS Gateway
         register_setting('gm_pro_settings', 'gm_sms_active', 'intval');
         register_setting('gm_pro_settings', 'gm_sms_gateway', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_sms_key', 'sanitize_text_field');
         register_setting('gm_pro_settings', 'gm_sms_msg', 'sanitize_textarea_field');
 
-        // Abandoned Cart
         register_setting('gm_pro_settings', 'gm_ab_active', 'intval');
+        register_setting('gm_pro_settings', 'gm_ab_delay', 'intval'); // delay in minutes (default 5)
     }
 
     public static function test_telegram_connection() {
@@ -199,7 +210,7 @@ class GM_Admin_Controller {
         }
 
         $msg = "🎉 <b>অভিনন্দন! টেলিগ্রাম বট সফলভাবে কানেক্ট হয়েছে!</b>\n\n";
-        $msg .= "🚀 <b>GM Toolkit Pro v2.3.0</b> এখন সম্পূর্ণ লাইভ।\n";
+        $msg .= "🚀 <b>GM Toolkit Pro v2.4.0</b> এখন সম্পূর্ণ লাইভ।\n";
         $msg .= "🆔 <b>টেস্ট আইডি:</b> #TEST-" . rand(1000, 9999) . "\n";
         $msg .= "👤 <b>কাস্টমার:</b> তামিম হাসান (টেস্ট)\n";
         $msg .= "📞 <b>ফোন:</b> <code>01700000000</code>\n";
@@ -302,6 +313,11 @@ class GM_Admin_Controller {
             .gm-btn-test:hover { background: #1E293B; transform: translateY(-1px); }
             .gm-save-bar { background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 18px 24px; border-radius: 0 0 20px 20px; margin: 30px -30px -30px -30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
             
+            .gm-badge-status { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+            .gm-status-progress { background: #FEF3C7; color: #B45309; }
+            .gm-status-converted { background: #ECFDF5; color: #065F46; }
+            .gm-status-abandoned { background: #FEE2E2; color: #DC2626; }
+
             .gm-footer-credits { margin-top: 25px; padding: 16px 20px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 13px; color: #64748B; }
             .gm-footer-credits a { color: #D97706; text-decoration: none; font-weight: 700; }
         </style>
@@ -311,7 +327,7 @@ class GM_Admin_Controller {
             <!-- Top Master Header -->
             <div class="gm-top-banner">
                 <div>
-                    <h2>🚀 GM Toolkit Pro <span class="gm-tag-pro">v2.3.0 Enterprise</span></h2>
+                    <h2>🚀 GM Toolkit Pro <span class="gm-tag-pro">v2.4.0 Enterprise</span></h2>
                     <p style="margin:0; font-size:14px; color:#94A3B8;">GrowthMark — Master E-Commerce & Order Automation Engine</p>
                 </div>
                 <div style="display:flex; align-items:center; gap:12px;">
@@ -490,12 +506,12 @@ class GM_Admin_Controller {
                             </div>
                         </div>
 
-                        <!-- 4. ABANDONED LEADS CRM TAB -->
+                        <!-- 4. 2-STAGE ABANDONED LEADS CRM TAB -->
                         <div id="tab-abandoned" class="gm-panel">
                             <div class="gm-panel-header">
                                 <div>
-                                    <h3>🛒 Global Abandoned Leads Live CRM</h3>
-                                    <p>Captured visitors who typed contact details on any checkout form or product page.</p>
+                                    <h3>🛒 2-Stage Abandoned Leads Live CRM</h3>
+                                    <p>Captures in-progress form fills silently; dispatches alerts only when a visitor truly abandons without completing the order.</p>
                                 </div>
                                 <?php if (!empty($leads)) : ?>
                                     <button type="button" onclick="gmClearLeads()" style="background:#FEE2E2; color:#DC2626; border:1px solid #FCA5A5; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer;">
@@ -506,14 +522,14 @@ class GM_Admin_Controller {
 
                             <label class="gm-toggle-box">
                                 <input type="checkbox" name="gm_ab_active" value="1" <?php checked(1, get_option('gm_ab_active', 1), true); ?> />
-                                <span>Enable Global Abandoned Cart Recovery Tracker (All Pages)</span>
+                                <span>Enable 2-Stage Abandoned Cart Tracking (All Pages)</span>
                             </label>
 
                             <?php if (empty($leads)) : ?>
                                 <div style="text-align:center; padding:45px 20px; color:#94A3B8;">
                                     <div style="font-size:36px; margin-bottom:10px;">📭</div>
-                                    <h4 style="margin:0 0 6px 0; color:#334155; font-size:16px;">No Abandoned Leads Yet</h4>
-                                    <p style="margin:0; font-size:13px;">When customers type their phone number anywhere on your website, their info will appear here live with 1-click WhatsApp buttons!</p>
+                                    <h4 style="margin:0 0 6px 0; color:#334155; font-size:16px;">No Leads Captured Yet</h4>
+                                    <p style="margin:0; font-size:13px;">When customers type their phone number on your checkout form, their info will appear here live with automatic status updates!</p>
                                 </div>
                             <?php else : ?>
                                 <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px; margin-top:15px;">
@@ -523,6 +539,7 @@ class GM_Admin_Controller {
                                             <th style="padding:10px 12px;">Customer Name</th>
                                             <th style="padding:10px 12px;">Phone Number</th>
                                             <th style="padding:10px 12px;">Product / Page</th>
+                                            <th style="padding:10px 12px;">Status</th>
                                             <th style="padding:10px 12px; text-align:right;">Quick Actions</th>
                                         </tr>
                                     </thead>
@@ -532,6 +549,7 @@ class GM_Admin_Controller {
                                             if (strlen($clean_p) === 11 && substr($clean_p, 0, 2) === '01') {
                                                 $clean_p = '88' . $clean_p;
                                             }
+                                            $status = isset($lead['status']) ? $lead['status'] : 'abandoned';
                                             $wa_url = "https://wa.me/{$clean_p}?text=" . urlencode("হ্যালো " . $lead['name'] . "! আপনি আমাদের ওয়েবসাইটে " . $lead['product'] . " অর্ডার করতে গিয়ে কি কোনো সমস্যায় পড়েছেন? সাহায্য করতে পারি?");
                                         ?>
                                             <tr style="border-bottom:1px solid #F1F5F9;">
@@ -539,6 +557,15 @@ class GM_Admin_Controller {
                                                 <td style="padding:12px; font-weight:700; color:#0F172A;"><?php echo esc_html($lead['name']); ?></td>
                                                 <td style="padding:12px; font-family:monospace; font-weight:700; color:#D97706;"><?php echo esc_html($lead['phone']); ?></td>
                                                 <td style="padding:12px; color:#334155;"><?php echo esc_html($lead['product']); ?></td>
+                                                <td style="padding:12px;">
+                                                    <?php if ($status === 'converted') : ?>
+                                                        <span class="gm-badge-status gm-status-converted">✓ Converted (Order #<?php echo esc_html(isset($lead['order_id']) ? $lead['order_id'] : ''); ?>)</span>
+                                                    <?php elseif ($status === 'in_progress') : ?>
+                                                        <span class="gm-badge-status gm-status-progress">⏳ In Progress</span>
+                                                    <?php else : ?>
+                                                        <span class="gm-badge-status gm-status-abandoned">⚠️ Abandoned</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td style="padding:12px; text-align:right;">
                                                     <a href="<?php echo esc_url($wa_url); ?>" target="_blank" style="background:#25D366; color:#FFF; text-decoration:none; font-weight:700; padding:6px 12px; border-radius:6px; font-size:11px; display:inline-flex; align-items:center; gap:4px; margin-right:6px;">
                                                         💬 WhatsApp
@@ -554,7 +581,7 @@ class GM_Admin_Controller {
                             <?php endif; ?>
 
                             <div class="gm-save-bar">
-                                <span style="font-size:13px; color:#64748B;">Recovers 20-30% of lost sales through immediate follow-up.</span>
+                                <span style="font-size:13px; color:#64748B;">Recovers 20-30% of dropped checkouts through immediate WhatsApp & phone follow-up.</span>
                                 <?php submit_button('💾 Save Settings', 'primary large', 'submit', false); ?>
                             </div>
                         </div>
@@ -631,7 +658,7 @@ class GM_Admin_Controller {
             <!-- Footer Branding & Credits Bar -->
             <div class="gm-footer-credits">
                 <div>
-                    <strong>GM Toolkit Pro</strong> v2.3.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
+                    <strong>GM Toolkit Pro</strong> v2.4.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
                 </div>
                 <div>
                     Powered by <a href="https://growthmark.pro" target="_blank">GrowthMark</a>
@@ -734,7 +761,7 @@ class GM_Admin_Controller {
 
 /**
  * ============================================================================
- * 3. CORE AUTOMATION ENGINE & GLOBAL ABANDONED CART TRACKER
+ * 3. 2-STAGE GLOBAL ABANDONED CART & CORE AUTOMATION ENGINE
  * ============================================================================
  */
 class GM_Core_Engine {
@@ -743,14 +770,17 @@ class GM_Core_Engine {
         add_action('wp_ajax_growthmark_quick_order', array(__CLASS__, 'handle_quick_order'));
         add_action('wp_ajax_nopriv_growthmark_quick_order', array(__CLASS__, 'handle_quick_order'));
 
-        // Abandoned Cart AJAX Handler
-        add_action('wp_ajax_gm_capture_abandoned', array(__CLASS__, 'handle_abandoned_lead'));
-        add_action('wp_ajax_nopriv_gm_capture_abandoned', array(__CLASS__, 'handle_abandoned_lead'));
+        // Silent Draft Cart Capture AJAX
+        add_action('wp_ajax_gm_capture_draft_cart', array(__CLASS__, 'handle_draft_capture'));
+        add_action('wp_ajax_nopriv_gm_capture_draft_cart', array(__CLASS__, 'handle_draft_capture'));
 
-        // Inject Global Abandoned Cart Listener on Every Front-end Page
-        add_action('wp_footer', array(__CLASS__, 'inject_global_abandoned_listener'), 999);
+        // Abandoned Heartbeat Check (Runs on page load / admin init to process timed-out drafts)
+        add_action('init', array(__CLASS__, 'process_abandoned_heartbeat'));
 
-        // WooCommerce Checkout Standard Order Hook
+        // Inject Global 2-Stage Draft Cart Listener on Every Front-end Page
+        add_action('wp_footer', array(__CLASS__, 'inject_global_draft_listener'), 999);
+
+        // Standard WooCommerce Order Hooks
         add_action('woocommerce_checkout_order_processed', array(__CLASS__, 'on_wc_order_processed'), 20, 3);
         add_action('woocommerce_order_status_processing', array(__CLASS__, 'on_wc_order_status_change'), 20, 1);
 
@@ -758,24 +788,24 @@ class GM_Core_Engine {
         add_shortcode('gm_checkout', array(__CLASS__, 'render_checkout_shortcode'));
     }
 
-    public static function inject_global_abandoned_listener() {
+    public static function inject_global_draft_listener() {
         if (is_admin()) return;
         if (!get_option('gm_ab_active', 1)) return;
         $ajax_url = admin_url('admin-ajax.php');
         ?>
-        <script id="gm-global-abandoned-tracker">
+        <script id="gm-global-draft-tracker">
         (function() {
-            let gmTracked = false;
-            function gmCapture(phone, name) {
-                if (gmTracked) return;
+            let gmLastCaptured = '';
+            function gmSilentDraftCapture(phone, name, address, product) {
                 const clean = phone.replace(/[^0-9]/g, '');
-                if (clean.length >= 11 && clean.startsWith('01')) {
-                    gmTracked = true;
+                if (clean.length === 11 && clean.startsWith('01') && clean !== gmLastCaptured) {
+                    gmLastCaptured = clean;
                     const params = new URLSearchParams();
-                    params.append('action', 'gm_capture_abandoned');
+                    params.append('action', 'gm_capture_draft_cart');
                     params.append('name', name || 'Guest Visitor');
                     params.append('phone', clean);
-                    params.append('product_name', document.title || 'Landing Page Product');
+                    params.append('address', address || '');
+                    params.append('product_name', product || document.title || 'Special Package');
                     
                     fetch('<?php echo esc_url($ajax_url); ?>', {
                         method: 'POST',
@@ -786,41 +816,189 @@ class GM_Core_Engine {
                 }
             }
 
-            function gmAttachListeners() {
+            function gmAttachDraftListeners() {
                 const phoneSelectors = 'input[type="tel"], input[name*="phone"], input[id*="phone"], input[name*="billing_phone"]';
                 const nameSelectors  = 'input[name*="name"], input[id*="name"], input[name*="billing_first_name"]';
+                const addrSelectors  = 'textarea[name*="address"], textarea[id*="address"], input[name*="billing_address_1"], input[id*="address"]';
                 
                 document.querySelectorAll(phoneSelectors).forEach(function(phoneEl) {
                     if (phoneEl.dataset.gmListening) return;
                     phoneEl.dataset.gmListening = 'true';
 
-                    function checkAndSend() {
+                    function checkAndCapture() {
                         const phoneVal = phoneEl.value.trim();
                         let nameVal = '';
+                        let addrVal = '';
                         const nameEl = document.querySelector(nameSelectors);
                         if (nameEl) nameVal = nameEl.value.trim();
-                        gmCapture(phoneVal, nameVal);
+                        const addrEl = document.querySelector(addrSelectors);
+                        if (addrEl) addrVal = addrEl.value.trim();
+                        gmSilentDraftCapture(phoneVal, nameVal, addrVal);
                     }
 
-                    phoneEl.addEventListener('blur', checkAndSend);
-                    phoneEl.addEventListener('change', checkAndSend);
+                    phoneEl.addEventListener('blur', checkAndCapture);
+                    phoneEl.addEventListener('change', checkAndCapture);
                     phoneEl.addEventListener('input', function() {
                         if (this.value.replace(/[^0-9]/g, '').length === 11) {
-                            checkAndSend();
+                            checkAndCapture();
                         }
                     });
                 });
             }
 
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', gmAttachListeners);
+                document.addEventListener('DOMContentLoaded', gmAttachDraftListeners);
             } else {
-                gmAttachListeners();
+                gmAttachDraftListeners();
             }
-            setInterval(gmAttachListeners, 1500);
+            setInterval(gmAttachDraftListeners, 1500);
         })();
         </script>
         <?php
+    }
+
+    public static function handle_draft_capture() {
+        try {
+            if (!get_option('gm_ab_active', 1)) {
+                wp_send_json_success();
+            }
+
+            $name    = isset($_REQUEST['name']) ? sanitize_text_field($_REQUEST['name']) : 'Guest Visitor';
+            $phone   = isset($_REQUEST['phone']) ? sanitize_text_field($_REQUEST['phone']) : '';
+            $address = isset($_REQUEST['address']) ? sanitize_textarea_field($_REQUEST['address']) : '';
+            $product = isset($_REQUEST['product_name']) ? sanitize_text_field($_REQUEST['product_name']) : '১ কেজি স্পেশাল কম্বো';
+
+            $clean_phone = preg_replace('/[^0-9]/', '', $phone);
+            if (empty($clean_phone) || strlen($clean_phone) < 11) {
+                wp_send_json_error();
+            }
+
+            $leads = get_option('gm_abandoned_leads_log', array());
+            if (!is_array($leads)) $leads = array();
+
+            // Check if this phone exists in log
+            $key = -1;
+            foreach ($leads as $k => $l) {
+                if ($l['phone'] === $clean_phone) {
+                    $key = $k;
+                    break;
+                }
+            }
+
+            if ($key >= 0) {
+                // If not already converted, update draft info and keep in_progress
+                if ($leads[$key]['status'] !== 'converted') {
+                    $leads[$key]['name']      = $name;
+                    $leads[$key]['address']   = $address;
+                    $leads[$key]['product']   = $product;
+                    $leads[$key]['timestamp'] = time();
+                    $leads[$key]['date']      = current_time('d-M-Y h:i A');
+                }
+            } else {
+                // Save silent draft in_progress
+                $leads[] = array(
+                    'date'         => current_time('d-M-Y h:i A'),
+                    'timestamp'    => time(),
+                    'name'         => $name,
+                    'phone'        => $clean_phone,
+                    'address'      => $address,
+                    'product'      => $product,
+                    'status'       => 'in_progress',
+                    'alert_sent'   => 0
+                );
+                if (count($leads) > 100) array_shift($leads);
+            }
+
+            update_option('gm_abandoned_leads_log', $leads);
+            wp_send_json_success();
+        } catch (\Throwable $e) {
+            wp_send_json_error();
+        }
+    }
+
+    public static function process_abandoned_heartbeat() {
+        if (!get_option('gm_ab_active', 1)) return;
+        
+        $leads = get_option('gm_abandoned_leads_log', array());
+        if (!is_array($leads) || empty($leads)) return;
+
+        $updated = false;
+        $now = time();
+
+        foreach ($leads as $k => $l) {
+            // If lead is in_progress for >= 3 minutes (180 seconds) and alert not sent yet -> Mark as Abandoned and send alert!
+            if ($l['status'] === 'in_progress' && empty($l['alert_sent']) && ($now - $l['timestamp'] >= 180)) {
+                $leads[$k]['status']     = 'abandoned';
+                $leads[$k]['alert_sent'] = 1;
+                $updated = true;
+
+                // Send Telegram Abandoned Alert
+                if (get_option('gm_tg_active')) {
+                    $token   = get_option('gm_tg_token');
+                    $chat_id = get_option('gm_tg_chat_id');
+                    if (!empty($token) && !empty($chat_id)) {
+                        $wa_link = "https://wa.me/88" . $l['phone'];
+                        $msg = "⚠️ <b>এবান্ডন্ড কার্ট অ্যালার্ট! (Abandoned Lead)</b>\n\n";
+                        $msg .= "👤 <b>কাস্টমার:</b> " . esc_html($l['name']) . "\n";
+                        $msg .= "📞 <b>ফোন:</b> <code>" . $l['phone'] . "</code>\n";
+                        if (!empty($l['address'])) $msg .= "📍 <b>ঠিকানা:</b> " . esc_html($l['address']) . "\n";
+                        $msg .= "📦 <b>ইন্টারেস্টেড পণ্য:</b> " . esc_html($l['product']) . "\n";
+                        $msg .= "⏰ <b>সময়:</b> " . $l['date'] . "\n";
+                        $msg .= "\n💡 <i>কাস্টমার ফর্ম পূরণ করে চলে গেছে। হোয়াটসঅ্যাপে মেসেজ বা কল করে কনভার্ট করুন!</i>\n";
+                        $msg .= "\n💬 <a href='{$wa_link}'>WhatsApp এ মেসেজ দিন</a> | ⚡ GrowthMark Engine";
+
+                        wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
+                            'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
+                            'timeout' => 5,
+                            'blocking' => false
+                        ));
+                    }
+                }
+
+                // Send Google Sheets Abandoned Row
+                if (get_option('gm_gs_active')) {
+                    $webhook = get_option('gm_gs_webhook');
+                    if (!empty($webhook)) {
+                        $payload = array(
+                            'date'         => $l['date'],
+                            'order_id'     => 'ABANDONED',
+                            'name'         => $l['name'],
+                            'phone'        => $l['phone'],
+                            'address'      => !empty($l['address']) ? $l['address'] : 'Incomplete Form',
+                            'area'         => 'N/A',
+                            'products'     => $l['product'],
+                            'total_amount' => 0,
+                            'status'       => 'Abandoned'
+                        );
+                        wp_remote_post($webhook, array(
+                            'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
+                            'body'    => wp_json_encode($payload),
+                            'timeout' => 5,
+                            'blocking'=> false
+                        ));
+                    }
+                }
+            }
+        }
+
+        if ($updated) {
+            update_option('gm_abandoned_leads_log', $leads);
+        }
+    }
+
+    public static function mark_lead_converted($phone, $order_id) {
+        $clean_phone = preg_replace('/[^0-9]/', '', $phone);
+        $leads = get_option('gm_abandoned_leads_log', array());
+        if (!is_array($leads) || empty($leads)) return;
+
+        foreach ($leads as $k => $l) {
+            if ($l['phone'] === $clean_phone) {
+                $leads[$k]['status']   = 'converted';
+                $leads[$k]['order_id'] = $order_id;
+                update_option('gm_abandoned_leads_log', $leads);
+                break;
+            }
+        }
     }
 
     public static function on_wc_order_processed($order_id, $posted_data, $order) {
@@ -831,96 +1009,6 @@ class GM_Core_Engine {
         $order = wc_get_order($order_id);
         if ($order && !$order->get_meta('_gm_dispatched')) {
             self::dispatch_automations_safe($order_id, $order);
-        }
-    }
-
-    public static function handle_abandoned_lead() {
-        try {
-            if (!get_option('gm_ab_active', 1)) {
-                wp_send_json_success();
-            }
-
-            $name    = isset($_REQUEST['name']) ? sanitize_text_field($_REQUEST['name']) : 'Guest Visitor';
-            $phone   = isset($_REQUEST['phone']) ? sanitize_text_field($_REQUEST['phone']) : '';
-            $product = isset($_REQUEST['product_name']) ? sanitize_text_field($_REQUEST['product_name']) : '১ কেজি স্পেশাল কম্বো';
-
-            $clean_phone = preg_replace('/[^0-9]/', '', $phone);
-            if (empty($clean_phone) || strlen($clean_phone) < 11) {
-                wp_send_json_error();
-            }
-
-            // Save to WP Options CRM Log
-            $leads = get_option('gm_abandoned_leads_log', array());
-            if (!is_array($leads)) $leads = array();
-            
-            $exists = false;
-            foreach ($leads as $l) {
-                if ($l['phone'] === $clean_phone && (time() - $l['timestamp']) < 600) {
-                    $exists = true;
-                    break;
-                }
-            }
-
-            if (!$exists) {
-                $leads[] = array(
-                    'date'      => current_time('d-M-Y h:i A'),
-                    'timestamp' => time(),
-                    'name'      => $name,
-                    'phone'     => $clean_phone,
-                    'product'   => $product
-                );
-                if (count($leads) > 100) array_shift($leads);
-                update_option('gm_abandoned_leads_log', $leads);
-            }
-
-            // Telegram Alert for Abandoned Lead
-            if (get_option('gm_tg_active')) {
-                $token   = get_option('gm_tg_token');
-                $chat_id = get_option('gm_tg_chat_id');
-                if (!empty($token) && !empty($chat_id)) {
-                    $wa_link = "https://wa.me/88{$clean_phone}";
-
-                    $msg = "⚠️ <b>এবান্ডন্ড কার্ট অ্যালার্ট! (Abandoned Lead)</b>\n\n";
-                    $msg .= "👤 <b>কাস্টমার:</b> " . esc_html($name) . "\n";
-                    $msg .= "📞 <b>ফোন:</b> <code>{$clean_phone}</code>\n";
-                    $msg .= "📦 <b>ইন্টারেস্টেড পণ্য:</b> " . esc_html($product) . "\n";
-                    $msg .= "⏰ <b>সময়:</b> " . current_time('d-M-Y h:i A') . "\n";
-                    $msg .= "\n💬 <a href='{$wa_link}'>WhatsApp এ মেসেজ দিন</a> | 📞 কল করে সেলস ক্লোজ করুন!";
-
-                    wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
-                        'timeout' => 5,
-                        'blocking' => false
-                    ));
-                }
-            }
-
-            // Google Sheets Log for Abandoned Lead
-            if (get_option('gm_gs_active')) {
-                $webhook = get_option('gm_gs_webhook');
-                if (!empty($webhook)) {
-                    $payload = array(
-                        'date'         => current_time('d-M-Y h:i A'),
-                        'order_id'     => 'ABANDONED',
-                        'name'         => $name,
-                        'phone'        => $clean_phone,
-                        'address'      => 'Incomplete Form',
-                        'area'         => 'N/A',
-                        'products'     => $product,
-                        'total_amount' => 0,
-                        'status'       => 'Abandoned'
-                    );
-                    wp_remote_post($webhook, array(
-                        'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
-                        'body'    => wp_json_encode($payload),
-                        'timeout' => 5,
-                        'blocking'=> false
-                    ));
-                }
-            }
-            wp_send_json_success();
-        } catch (\Throwable $e) {
-            wp_send_json_error();
         }
     }
 
@@ -977,6 +1065,11 @@ class GM_Core_Engine {
             $order->save();
 
             $order_id = $order->get_id();
+
+            // Mark Lead as Converted in CRM Log
+            self::mark_lead_converted($phone, $order_id);
+
+            // Dispatch Confirmed Automations
             self::dispatch_automations_safe($order_id, $order);
 
             wp_send_json_success(array(
@@ -999,6 +1092,9 @@ class GM_Core_Engine {
 
             $order->update_meta_data('_gm_dispatched', '1');
             $order->save();
+
+            // Also mark converted
+            self::mark_lead_converted($order->get_billing_phone(), $order_id);
 
             $name     = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
             if (empty($name)) $name = $order->get_formatted_billing_full_name();
@@ -1029,7 +1125,7 @@ class GM_Core_Engine {
             }
             $products_str = implode(', ', $products_list);
 
-            // 1. Telegram Dispatch
+            // 1. Telegram Dispatch (Confirmed Order)
             if (get_option('gm_tg_active')) {
                 $token   = get_option('gm_tg_token');
                 $chat_id = get_option('gm_tg_chat_id');
