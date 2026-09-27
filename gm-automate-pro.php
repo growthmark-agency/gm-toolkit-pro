@@ -3,7 +3,7 @@
  * Plugin Name: GM Automate Pro — E-Commerce & Logistics Engine
  * Plugin URI: https://growthmark.pro
  * Description: High-performance WooCommerce automation suite by GrowthMark: 1-Click fast checkout, Smart Abandoned Cart recovery, Fraud Shield & Anti-Spam protection, WooCommerce Orders list Steadfast & Pathao 1-Click booking with live Delivery Success Ratio meter, instant Telegram merchant alerts, Google Sheets live CRM, and SMS notifications.
- * Version: 4.1.0
+ * Version: 4.2.0
  * Author: Tamim Hasan
  * Author URI: https://tamim.growthmark.pro
  * Text Domain: gm-automate-pro
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GM_AUTOMATE_PRO_VERSION', '4.1.0');
+define('GM_AUTOMATE_PRO_VERSION', '4.2.0');
 define('GM_AUTOMATE_PRO_FILE', __FILE__);
 
 // Official Brand Icon Base64 Data (Transparent 128x128 White GM Logo)
@@ -204,7 +204,9 @@ class GM_Admin_Controller {
     public static function admin_custom_css() {
         ?>
         <style>
+            #adminmenu #toplevel_page_gm-automate-pro .wp-menu-image img,
             #adminmenu .toplevel_page_gm-automate-pro .wp-menu-image img,
+            #adminmenu #toplevel_page_gm-toolkit-pro .wp-menu-image img,
             #adminmenu .toplevel_page_gm-toolkit-pro .wp-menu-image img {
                 width: 20px !important;
                 height: 20px !important;
@@ -213,10 +215,12 @@ class GM_Admin_Controller {
                 opacity: 0.85 !important;
                 transition: all 0.2s ease !important;
             }
-            #adminmenu .toplevel_page_gm-automate-pro:hover .wp-menu-image img,
-            #adminmenu .toplevel_page_gm-automate-pro.current .wp-menu-image img,
-            #adminmenu .toplevel_page_gm-toolkit-pro:hover .wp-menu-image img,
-            #adminmenu .toplevel_page_gm-toolkit-pro.current .wp-menu-image img {
+            #adminmenu #toplevel_page_gm-automate-pro:hover .wp-menu-image img,
+            #adminmenu #toplevel_page_gm-automate-pro.current .wp-menu-image img,
+            #adminmenu #toplevel_page_gm-automate-pro.wp-has-current-submenu .wp-menu-image img,
+            #adminmenu #toplevel_page_gm-toolkit-pro:hover .wp-menu-image img,
+            #adminmenu #toplevel_page_gm-toolkit-pro.current .wp-menu-image img,
+            #adminmenu #toplevel_page_gm-toolkit-pro.wp-has-current-submenu .wp-menu-image img {
                 opacity: 1 !important;
                 filter: drop-shadow(0 0 3px rgba(255,255,255,0.4)) !important;
             }
@@ -225,7 +229,8 @@ class GM_Admin_Controller {
     }
 
     public static function add_menu_page() {
-        $icon = 'data:image/png;base64,' . GM_AUTOMATE_LOGO_BASE64;
+        $icon_file = plugin_dir_path(__FILE__) . 'assets/icon-128x128.png';
+        $icon_url  = file_exists($icon_file) ? plugins_url('assets/icon-128x128.png', __FILE__) : 'dashicons-superhero';
 
         add_menu_page(
             'GM Automate Pro',
@@ -233,7 +238,7 @@ class GM_Admin_Controller {
             'manage_options',
             'gm-automate-pro',
             array(__CLASS__, 'render_admin_dashboard'),
-            $icon,
+            $icon_url,
             56
         );
 
@@ -564,7 +569,7 @@ class GM_Admin_Controller {
         }
 
         $msg = "<b>GM Automate Live Alert</b>\n\n";
-        $msg .= "<b>GM Automate v4.1.0</b> is active.\n";
+        $msg .= "<b>GM Automate v4.2.0</b> is active.\n";
         $msg .= "<b>Test Order:</b> #TEST-" . rand(1000, 9999) . "\n";
         $msg .= "<b>Customer:</b> Tamim Hasan (Test)\n";
         $msg .= "<b>Phone:</b> <code>01700000000</code>\n";
@@ -689,36 +694,33 @@ class GM_Admin_Controller {
             }
             .gm-dash-wrap * { box-sizing: border-box; }
 
-            .gm-top-banner {
-                background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-                color: #FFF;
-                padding: 16px 24px;
-                border-radius: 14px;
-                box-shadow: 0 6px 20px rgba(15,23,42,0.06);
-                margin-bottom: 16px;
+            .gm-page-header {
+                background: #FFFFFF;
+                border: 1px solid #E2E8F0;
+                border-radius: 12px;
+                padding: 14px 20px;
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
-                flex-wrap: wrap;
-                gap: 12px;
+                justify-content: space-between;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+                margin-bottom: 16px;
             }
             .gm-header-brand {
                 display: flex;
                 align-items: center;
-                gap: 14px;
+                gap: 12px;
             }
             .gm-brand-logo-badge {
-                width: 44px;
-                height: 44px;
-                background: rgba(255,255,255,0.08);
-                border: 1px solid rgba(255,255,255,0.22);
-                border-radius: 12px;
+                width: 38px;
+                height: 38px;
+                background: #0F172A;
+                border-radius: 8px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 6px;
+                padding: 5px;
+                box-shadow: 0 2px 6px rgba(15,23,42,0.15);
                 flex-shrink: 0;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.18);
             }
             .gm-brand-logo-badge img {
                 width: 100%;
@@ -726,69 +728,89 @@ class GM_Admin_Controller {
                 object-fit: contain;
                 display: block;
             }
-            .gm-top-banner h2 {
-                margin: 0 0 3px 0;
-                font-size: 19px;
+            .gm-header-title {
+                margin: 0;
+                font-size: 18px;
                 font-weight: 800;
-                color: #FFF !important;
-                display: flex;
-                align-items: center;
-                gap: 8px;
+                color: #0F172A;
                 letter-spacing: -0.01em;
+                line-height: 1.2;
             }
-            .gm-tag-pro {
-                background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
-                color: #FFF;
-                font-size: 10px;
-                font-weight: 800;
-                padding: 3px 9px;
-                border-radius: 9999px;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
+            .gm-header-desc {
+                margin: 3px 0 0 0;
+                font-size: 12.5px;
+                color: #64748B;
+                line-height: 1.3;
             }
             
-            /* Top Horizontal Tab Navigation Bar (Full Width like WooCommerce) */
+            /* Top Horizontal Tab Navigation Bar (Strict Single-Line like WooCommerce) */
             .gm-nav-tabs-wrapper {
-                width: 100%;
-                margin-bottom: 18px;
+                margin: 0 0 18px 0;
+                border-bottom: 2px solid #E2E8F0;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
             }
+            .gm-nav-tabs-wrapper::-webkit-scrollbar { display: none; }
+            
             .gm-nav-menu {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap !important;
                 align-items: center;
-                gap: 6px;
-                background: #FFFFFF;
-                border: 1px solid #E2E8F0;
-                border-radius: 14px;
-                padding: 8px 10px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+                gap: 4px;
+                padding: 0 0 8px 0;
+                white-space: nowrap;
+                min-width: max-content;
             }
             .gm-nav-item {
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
-                padding: 9px 15px;
-                border-radius: 10px;
+                gap: 6px;
+                padding: 7px 12px;
+                border-radius: 8px;
                 font-weight: 600;
-                font-size: 13px;
+                font-size: 12.5px;
                 color: #475569;
                 text-decoration: none;
                 cursor: pointer;
-                transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+                transition: all 0.15s ease;
                 white-space: nowrap;
                 user-select: none;
             }
             .gm-nav-item:hover {
-                background: #F1F5F9;
+                background: #E2E8F0;
                 color: #0F172A;
             }
             .gm-nav-item.active {
                 background: #0F172A;
                 color: #FFFFFF;
-                box-shadow: 0 3px 10px rgba(15,23,42,0.12);
+                box-shadow: 0 2px 8px rgba(15,23,42,0.12);
             }
             .gm-nav-item.active .gm-nav-svg {
                 stroke: #FDE68A;
+            }
+            .gm-tab-badge {
+                background: #FEE2E2;
+                color: #DC2626;
+                font-size: 11px;
+                font-weight: 800;
+                padding: 1px 6px;
+                border-radius: 9999px;
+                margin-left: 2px;
+            }
+            .gm-tab-badge-dark {
+                background: #0F172A;
+                color: #FDE68A;
+                font-size: 11px;
+                font-weight: 800;
+                padding: 1px 6px;
+                border-radius: 9999px;
+                margin-left: 2px;
+            }
+            .gm-nav-item.active .gm-tab-badge-dark {
+                background: rgba(255,255,255,0.2);
+                color: #FFFFFF;
             }
             .gm-nav-item-docs {
                 margin-left: auto;
@@ -812,8 +834,8 @@ class GM_Admin_Controller {
                 stroke: #D97706;
             }
             .gm-nav-svg {
-                width: 16px;
-                height: 16px;
+                width: 15px;
+                height: 15px;
                 stroke: #64748B;
                 stroke-width: 2;
                 fill: none;
@@ -1142,25 +1164,19 @@ class GM_Admin_Controller {
         </style>
 
         <div class="gm-dash-wrap">
-            
-            <!-- Top Master Header -->
-            <div class="gm-top-banner">
+            <?php
+            $logo_url = plugins_url('assets/icon-128x128.png', __FILE__);
+            ?>
+            <!-- Top Clean Master Header (Minimal, No Enterprise Badge, No Right Badge) -->
+            <div class="gm-page-header">
                 <div class="gm-header-brand">
                     <div class="gm-brand-logo-badge">
-                        <img src="data:image/png;base64,<?php echo GM_AUTOMATE_LOGO_BASE64; ?>" alt="GM Automate" />
+                        <img src="<?php echo esc_url($logo_url); ?>" alt="GM Automate" />
                     </div>
                     <div>
-                        <h2>
-                            GM Automate Pro <span class="gm-tag-pro">v4.1.0 Enterprise</span>
-                        </h2>
-                        <p style="margin:0; font-size:13px; color:#94A3B8;">GrowthMark — High-Performance E-Commerce, Logistics & Fraud Shield Suite</p>
+                        <h2 class="gm-header-title">GM Automate Pro</h2>
+                        <p class="gm-header-desc">High-Performance E-Commerce, Logistics & Fraud Shield Suite</p>
                     </div>
-                </div>
-                <div>
-                    <span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); padding:7px 16px; border-radius:10px; font-size:12px; color:#FDE68A; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                        <span style="width:7px; height:7px; background:#10B981; border-radius:50%; box-shadow:0 0 6px #10B981;"></span>
-                        GrowthMark Automation Core
-                    </span>
                 </div>
             </div>
 
@@ -1170,42 +1186,42 @@ class GM_Admin_Controller {
                 </div>
             <?php endif; ?>
 
-            <!-- Top Horizontal Navigation Tabs (Full Width like WooCommerce) -->
+            <!-- Top Horizontal Navigation Tabs (Strict Single-Line like WooCommerce) -->
             <div class="gm-nav-tabs-wrapper">
                 <div class="gm-nav-menu">
                     <div class="gm-nav-item active" data-tab="telegram" onclick="gmSwitchTab('telegram', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                        <span>Telegram Alerts</span>
+                        <span>Telegram</span>
                     </div>
                     <div class="gm-nav-item" data-tab="sheets" onclick="gmSwitchTab('sheets', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-                        <span>Google Sheets CRM</span>
+                        <span>Google Sheets</span>
                     </div>
                     <div class="gm-nav-item" data-tab="courier" onclick="gmSwitchTab('courier', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8zM5.5 19a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18.5 19a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>
-                        <span>Logistics (Steadfast & Pathao)</span>
+                        <span>Logistics</span>
                     </div>
                     <div class="gm-nav-item" data-tab="abandoned" onclick="gmSwitchTab('abandoned', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-                        <span>Abandoned Leads CRM</span>
-                        <span id="gmAbandonedBadge" style="background:#FEE2E2; color:#DC2626; font-size:11px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:4px; transition:opacity 0.2s;"><?php echo count($abandoned_only); ?></span>
+                        <span>Abandoned Leads</span>
+                        <span id="gmAbandonedBadge" class="gm-tab-badge" style="<?php echo empty($abandoned_only) ? 'display:none;' : ''; ?>"><?php echo count($abandoned_only); ?></span>
                     </div>
                     <div class="gm-nav-item" data-tab="fraud" onclick="gmSwitchTab('fraud', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                        <span>Fraud Shield & Anti-Spam</span>
-                        <span id="gmFraudBadge" style="background:#0F172A; color:#FDE68A; font-size:11px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:4px; transition:opacity 0.2s;"><?php echo count($blocked_phones) + count($blocked_ips); ?></span>
+                        <span>Fraud Shield</span>
+                        <span id="gmFraudBadge" class="gm-tab-badge-dark"><?php echo count($blocked_phones) + count($blocked_ips); ?></span>
                     </div>
                     <div class="gm-nav-item" data-tab="sms" onclick="gmSwitchTab('sms', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                        <span>Customer SMS</span>
+                        <span>SMS Gateway</span>
                     </div>
                     <div class="gm-nav-item" data-tab="shortcode" onclick="gmSwitchTab('shortcode', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        <span>1-Click Checkout Setup</span>
+                        <span>1-Click Checkout</span>
                     </div>
                     <div class="gm-nav-item gm-nav-item-docs" data-tab="masterclass" onclick="gmSwitchTab('masterclass', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                        <span>Video Masterclass & Docs</span>
+                        <span>Docs & Tutorials</span>
                     </div>
                 </div>
             </div>
@@ -1954,7 +1970,7 @@ function doPost(e) {
             <!-- Footer Branding & Credits Bar -->
             <div class="gm-footer-credits">
                 <div>
-                    <strong>GM Automate Pro</strong> v4.1.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
+                    <strong>GM Automate Pro</strong> v4.2.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
                 </div>
                 <div>
                     Powered by <a href="https://growthmark.pro" target="_blank">GrowthMark</a>
