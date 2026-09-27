@@ -3,7 +3,7 @@
  * Plugin Name: GM Automate Pro — E-Commerce & Logistics Engine
  * Plugin URI: https://growthmark.pro
  * Description: High-performance WooCommerce automation suite by GrowthMark: 1-Click fast checkout, Smart Abandoned Cart recovery, Fraud Shield & Anti-Spam protection, WooCommerce Orders list Steadfast & Pathao 1-Click booking with live Delivery Success Ratio meter, instant Telegram merchant alerts, Google Sheets live CRM, and SMS notifications.
- * Version: 4.0.0
+ * Version: 4.1.0
  * Author: Tamim Hasan
  * Author URI: https://tamim.growthmark.pro
  * Text Domain: gm-automate-pro
@@ -16,8 +16,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GM_AUTOMATE_PRO_VERSION', '4.0.0');
+define('GM_AUTOMATE_PRO_VERSION', '4.1.0');
 define('GM_AUTOMATE_PRO_FILE', __FILE__);
+
+// Official Brand Icon Base64 Data (Transparent 128x128 White GM Logo)
+if (!defined('GM_AUTOMATE_LOGO_BASE64')) {
+    define('GM_AUTOMATE_LOGO_BASE64', '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');
+}
 
 // Legacy constant compatibility for existing configurations
 if (!defined('GM_AUTOMATE_VERSION')) {
@@ -179,6 +184,7 @@ class GM_GitHub_Updater {
 class GM_Admin_Controller {
     public static function init() {
         add_action('admin_menu', array(__CLASS__, 'add_menu_page'));
+        add_action('admin_head', array(__CLASS__, 'admin_custom_css'));
         add_action('admin_init', array(__CLASS__, 'register_all_settings'));
         add_action('wp_ajax_gm_test_telegram', array(__CLASS__, 'test_telegram_connection'));
         add_action('wp_ajax_gm_test_sheets', array(__CLASS__, 'test_sheets_connection'));
@@ -195,8 +201,31 @@ class GM_Admin_Controller {
         add_action('wp_ajax_gm_check_customer_ratio', array(__CLASS__, 'ajax_check_customer_ratio'));
     }
 
+    public static function admin_custom_css() {
+        ?>
+        <style>
+            #adminmenu .toplevel_page_gm-automate-pro .wp-menu-image img,
+            #adminmenu .toplevel_page_gm-toolkit-pro .wp-menu-image img {
+                width: 20px !important;
+                height: 20px !important;
+                padding: 7px 0 0 0 !important;
+                object-fit: contain !important;
+                opacity: 0.85 !important;
+                transition: all 0.2s ease !important;
+            }
+            #adminmenu .toplevel_page_gm-automate-pro:hover .wp-menu-image img,
+            #adminmenu .toplevel_page_gm-automate-pro.current .wp-menu-image img,
+            #adminmenu .toplevel_page_gm-toolkit-pro:hover .wp-menu-image img,
+            #adminmenu .toplevel_page_gm-toolkit-pro.current .wp-menu-image img {
+                opacity: 1 !important;
+                filter: drop-shadow(0 0 3px rgba(255,255,255,0.4)) !important;
+            }
+        </style>
+        <?php
+    }
+
     public static function add_menu_page() {
-        $svg_icon = 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>');
+        $icon = 'data:image/png;base64,' . GM_AUTOMATE_LOGO_BASE64;
 
         add_menu_page(
             'GM Automate Pro',
@@ -204,7 +233,7 @@ class GM_Admin_Controller {
             'manage_options',
             'gm-automate-pro',
             array(__CLASS__, 'render_admin_dashboard'),
-            $svg_icon,
+            $icon,
             56
         );
 
@@ -289,7 +318,14 @@ class GM_Admin_Controller {
         $res = wp_remote_request($url, $args);
 
         if (is_wp_error($res)) {
-            return new WP_Error('curl_error', 'Steadfast Connection Error: ' . $res->get_error_message());
+            // Mirror fallback to portal.steadfast.com.bd
+            $alt_url = 'https://portal.steadfast.com.bd/api/v1/' . ltrim($endpoint_path, '/');
+            $alt_res = wp_remote_request($alt_url, $args);
+            if (!is_wp_error($alt_res)) {
+                $res = $alt_res;
+            } else {
+                return new WP_Error('curl_error', 'Steadfast Connection Error: ' . $res->get_error_message());
+            }
         }
 
         $code = wp_remote_retrieve_response_code($res);
@@ -528,7 +564,7 @@ class GM_Admin_Controller {
         }
 
         $msg = "<b>GM Automate Live Alert</b>\n\n";
-        $msg .= "<b>GM Automate v4.0.0</b> is active.\n";
+        $msg .= "<b>GM Automate v4.1.0</b> is active.\n";
         $msg .= "<b>Test Order:</b> #TEST-" . rand(1000, 9999) . "\n";
         $msg .= "<b>Customer:</b> Tamim Hasan (Test)\n";
         $msg .= "<b>Phone:</b> <code>01700000000</code>\n";
@@ -588,7 +624,7 @@ class GM_Admin_Controller {
         }
 
         $code = wp_remote_retrieve_response_code($res);
-        if ($code >= 200 && $code < 300) {
+        if (($code >= 200 && $code < 300) || $code === 302) {
             wp_send_json_success(array('message' => 'Connected successfully! Test row added to your Google Sheet.'));
         } else {
             wp_send_json_error(array('message' => "Google Apps Script returned HTTP error {$code}. Please verify Web App Deployment settings ('Anyone' access)."));
@@ -642,9 +678,10 @@ class GM_Admin_Controller {
             /* Modern Responsive Compact Dashboard Layout */
             #wpfooter { display: none !important; }
             .gm-dash-wrap {
-                max-width: 1360px;
+                max-width: 100%;
                 width: 100%;
-                margin: 10px 0 15px 0;
+                margin: 10px 0 20px 0;
+                padding-right: 18px;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
                 color: #0F172A;
                 font-size: 13px;
@@ -658,12 +695,36 @@ class GM_Admin_Controller {
                 padding: 16px 24px;
                 border-radius: 14px;
                 box-shadow: 0 6px 20px rgba(15,23,42,0.06);
-                margin-bottom: 18px;
+                margin-bottom: 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 12px;
+            }
+            .gm-header-brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+            .gm-brand-logo-badge {
+                width: 44px;
+                height: 44px;
+                background: rgba(255,255,255,0.08);
+                border: 1px solid rgba(255,255,255,0.22);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 6px;
+                flex-shrink: 0;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            }
+            .gm-brand-logo-badge img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
             }
             .gm-top-banner h2 {
                 margin: 0 0 3px 0;
@@ -686,29 +747,27 @@ class GM_Admin_Controller {
                 letter-spacing: 0.05em;
             }
             
-            .gm-main-layout {
-                display: grid;
-                grid-template-columns: 260px minmax(0, 1fr);
-                gap: 18px;
-                align-items: start;
+            /* Top Horizontal Tab Navigation Bar (Full Width like WooCommerce) */
+            .gm-nav-tabs-wrapper {
                 width: 100%;
+                margin-bottom: 18px;
             }
-            @media (max-width: 1024px) {
-                .gm-main-layout { grid-template-columns: 1fr; }
-            }
-            
             .gm-nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 6px;
                 background: #FFFFFF;
                 border: 1px solid #E2E8F0;
                 border-radius: 14px;
-                padding: 8px;
+                padding: 8px 10px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.02);
             }
             .gm-nav-item {
-                display: flex;
+                display: inline-flex;
                 align-items: center;
-                gap: 10px;
-                padding: 10px 14px;
+                gap: 8px;
+                padding: 9px 15px;
                 border-radius: 10px;
                 font-weight: 600;
                 font-size: 13px;
@@ -716,10 +775,11 @@ class GM_Admin_Controller {
                 text-decoration: none;
                 cursor: pointer;
                 transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-                margin-bottom: 3px;
+                white-space: nowrap;
+                user-select: none;
             }
             .gm-nav-item:hover {
-                background: #F8FAFC;
+                background: #F1F5F9;
                 color: #0F172A;
             }
             .gm-nav-item.active {
@@ -729,6 +789,27 @@ class GM_Admin_Controller {
             }
             .gm-nav-item.active .gm-nav-svg {
                 stroke: #FDE68A;
+            }
+            .gm-nav-item-docs {
+                margin-left: auto;
+                color: #D97706 !important;
+                background: #FFFBEB;
+                border: 1px solid #FDE68A;
+            }
+            .gm-nav-item-docs:hover {
+                background: #FEF3C7;
+                color: #B45309 !important;
+            }
+            .gm-nav-item-docs.active {
+                background: #D97706 !important;
+                color: #FFFFFF !important;
+                border-color: #D97706 !important;
+            }
+            .gm-nav-item-docs.active .gm-nav-svg {
+                stroke: #FFFFFF !important;
+            }
+            .gm-nav-item-docs .gm-nav-svg {
+                stroke: #D97706;
             }
             .gm-nav-svg {
                 width: 16px;
@@ -742,14 +823,22 @@ class GM_Admin_Controller {
                 transition: stroke 0.2s;
             }
 
+            .gm-main-layout {
+                display: block;
+                width: 100%;
+            }
+            .gm-panels-wrap {
+                width: 100%;
+            }
             .gm-panel {
                 display: none;
                 background: #FFFFFF;
                 border: 1px solid #E2E8F0;
                 border-radius: 16px;
-                padding: 24px;
+                padding: 28px 30px;
                 box-shadow: 0 2px 12px rgba(0,0,0,0.02);
-                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
             }
             .gm-panel.active { display: block; }
             .gm-panel-header {
@@ -1056,15 +1145,20 @@ class GM_Admin_Controller {
             
             <!-- Top Master Header -->
             <div class="gm-top-banner">
-                <div>
-                    <h2>
-                        <svg style="width:24px; height:24px; stroke:#F59E0B; stroke-width:2.2; fill:none;" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        GM Automate Pro <span class="gm-tag-pro">v4.0.0 Enterprise</span>
-                    </h2>
-                    <p style="margin:0; font-size:14px; color:#94A3B8;">GrowthMark — High-Performance E-Commerce, Logistics & Fraud Shield Suite</p>
+                <div class="gm-header-brand">
+                    <div class="gm-brand-logo-badge">
+                        <img src="data:image/png;base64,<?php echo GM_AUTOMATE_LOGO_BASE64; ?>" alt="GM Automate" />
+                    </div>
+                    <div>
+                        <h2>
+                            GM Automate Pro <span class="gm-tag-pro">v4.1.0 Enterprise</span>
+                        </h2>
+                        <p style="margin:0; font-size:13px; color:#94A3B8;">GrowthMark — High-Performance E-Commerce, Logistics & Fraud Shield Suite</p>
+                    </div>
                 </div>
                 <div>
-                    <span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); padding:7px 16px; border-radius:10px; font-size:12px; color:#FDE68A; font-weight:700;">
+                    <span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); padding:7px 16px; border-radius:10px; font-size:12px; color:#FDE68A; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                        <span style="width:7px; height:7px; background:#10B981; border-radius:50%; box-shadow:0 0 6px #10B981;"></span>
                         GrowthMark Automation Core
                     </span>
                 </div>
@@ -1076,48 +1170,49 @@ class GM_Admin_Controller {
                 </div>
             <?php endif; ?>
 
-            <div class="gm-main-layout">
-                
-                <!-- Left Navigation Bar with Active Persistent State -->
+            <!-- Top Horizontal Navigation Tabs (Full Width like WooCommerce) -->
+            <div class="gm-nav-tabs-wrapper">
                 <div class="gm-nav-menu">
-                    <div class="gm-nav-item" data-tab="telegram" onclick="gmSwitchTab('telegram', this)">
+                    <div class="gm-nav-item active" data-tab="telegram" onclick="gmSwitchTab('telegram', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                        Telegram Alerts
+                        <span>Telegram Alerts</span>
                     </div>
                     <div class="gm-nav-item" data-tab="sheets" onclick="gmSwitchTab('sheets', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-                        Google Sheets CRM
+                        <span>Google Sheets CRM</span>
                     </div>
                     <div class="gm-nav-item" data-tab="courier" onclick="gmSwitchTab('courier', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8zM5.5 19a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18.5 19a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>
-                        Logistics (Steadfast & Pathao)
+                        <span>Logistics (Steadfast & Pathao)</span>
                     </div>
                     <div class="gm-nav-item" data-tab="abandoned" onclick="gmSwitchTab('abandoned', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-                        Abandoned Leads CRM 
-                        <span id="gmAbandonedBadge" style="background:#FEE2E2; color:#DC2626; font-size:11px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:auto; transition:opacity 0.2s;"><?php echo count($abandoned_only); ?></span>
+                        <span>Abandoned Leads CRM</span>
+                        <span id="gmAbandonedBadge" style="background:#FEE2E2; color:#DC2626; font-size:11px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:4px; transition:opacity 0.2s;"><?php echo count($abandoned_only); ?></span>
                     </div>
                     <div class="gm-nav-item" data-tab="fraud" onclick="gmSwitchTab('fraud', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                        Fraud Shield & Anti-Spam 
-                        <span id="gmFraudBadge" style="background:#0F172A; color:#FDE68A; font-size:11px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:auto; transition:opacity 0.2s;"><?php echo count($blocked_phones) + count($blocked_ips); ?></span>
+                        <span>Fraud Shield & Anti-Spam</span>
+                        <span id="gmFraudBadge" style="background:#0F172A; color:#FDE68A; font-size:11px; font-weight:800; padding:2px 8px; border-radius:9999px; margin-left:4px; transition:opacity 0.2s;"><?php echo count($blocked_phones) + count($blocked_ips); ?></span>
                     </div>
                     <div class="gm-nav-item" data-tab="sms" onclick="gmSwitchTab('sms', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                        Customer SMS Gateway
+                        <span>Customer SMS</span>
                     </div>
                     <div class="gm-nav-item" data-tab="shortcode" onclick="gmSwitchTab('shortcode', this)">
                         <svg class="gm-nav-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        1-Click Checkout Setup
+                        <span>1-Click Checkout Setup</span>
                     </div>
-                    <div class="gm-nav-item" data-tab="masterclass" onclick="gmSwitchTab('masterclass', this)" style="border-top:1px solid #F1F5F9; margin-top:6px; padding-top:14px; color:#D97706;">
-                        <svg class="gm-nav-svg" style="stroke:#D97706;" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                        Video Masterclass & Docs
+                    <div class="gm-nav-item gm-nav-item-docs" data-tab="masterclass" onclick="gmSwitchTab('masterclass', this)">
+                        <svg class="gm-nav-svg" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Video Masterclass & Docs</span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Right Form Content Panels -->
-                <div>
+            <!-- Full Width Content Panels -->
+            <div class="gm-main-layout">
+                <div class="gm-panels-wrap">
                     <form method="post" action="options.php" id="gmMainForm">
                         <?php settings_fields('gm_pro_settings'); ?>
 
@@ -1859,7 +1954,7 @@ function doPost(e) {
             <!-- Footer Branding & Credits Bar -->
             <div class="gm-footer-credits">
                 <div>
-                    <strong>GM Automate Pro</strong> v4.0.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
+                    <strong>GM Automate Pro</strong> v4.1.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
                 </div>
                 <div>
                     Powered by <a href="https://growthmark.pro" target="_blank">GrowthMark</a>
