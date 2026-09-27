@@ -3,7 +3,7 @@
  * Plugin Name: GM Automate Pro — E-Commerce & Logistics Engine
  * Plugin URI: https://growthmark.pro
  * Description: High-performance WooCommerce automation suite by GrowthMark: 1-Click fast checkout, Smart Abandoned Cart recovery, Fraud Shield & Anti-Spam protection, WooCommerce Orders list Steadfast & Pathao 1-Click booking with live Delivery Success Ratio meter, instant Telegram merchant alerts, Google Sheets live CRM, and SMS notifications.
- * Version: 4.2.0
+ * Version: 4.2.1
  * Author: Tamim Hasan
  * Author URI: https://tamim.growthmark.pro
  * Text Domain: gm-automate-pro
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GM_AUTOMATE_PRO_VERSION', '4.2.0');
+define('GM_AUTOMATE_PRO_VERSION', '4.2.1');
 define('GM_AUTOMATE_PRO_FILE', __FILE__);
 
 // Official Brand Icon Base64 Data (Transparent 128x128 White GM Logo)
@@ -561,15 +561,15 @@ class GM_Admin_Controller {
 
     public static function test_telegram_connection() {
         check_ajax_referer('gm_pro_nonce', 'nonce');
-        $token   = sanitize_text_field($_POST['token']);
-        $chat_id = sanitize_text_field($_POST['chat_id']);
+        $token   = trim(sanitize_text_field($_POST['token']));
+        $chat_id = trim(sanitize_text_field($_POST['chat_id']));
 
         if (empty($token) || empty($chat_id)) {
             wp_send_json_error(array('message' => 'Please fill both Bot Token and Chat ID.'));
         }
 
         $msg = "<b>GM Automate Live Alert</b>\n\n";
-        $msg .= "<b>GM Automate v4.2.0</b> is active.\n";
+        $msg .= "<b>GM Automate v4.2.1</b> is active.\n";
         $msg .= "<b>Test Order:</b> #TEST-" . rand(1000, 9999) . "\n";
         $msg .= "<b>Customer:</b> Tamim Hasan (Test)\n";
         $msg .= "<b>Phone:</b> <code>01700000000</code>\n";
@@ -580,8 +580,9 @@ class GM_Admin_Controller {
         $msg .= "\n<i>GrowthMark Automation Engine</i>";
 
         $res = wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-            'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML'),
-            'timeout' => 8
+            'body'    => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML'),
+            'timeout' => 10,
+            'blocking'=> true
         ));
 
         if (is_wp_error($res)) {
@@ -590,7 +591,12 @@ class GM_Admin_Controller {
 
         $code = wp_remote_retrieve_response_code($res);
         if ($code == 200) {
-            wp_send_json_success(array('message' => 'Success! Test alert sent to Telegram.'));
+            // Auto-persist successfully verified credentials
+            update_option('gm_tg_token', $token);
+            update_option('gm_tg_chat_id', $chat_id);
+            update_option('gm_tg_active', 1);
+
+            wp_send_json_success(array('message' => 'Success! Test alert sent & Telegram settings automatically saved.'));
         } else {
             $body = json_decode(wp_remote_retrieve_body($res), true);
             $err = isset($body['description']) ? $body['description'] : 'Unknown error';
@@ -600,7 +606,7 @@ class GM_Admin_Controller {
 
     public static function test_sheets_connection() {
         check_ajax_referer('gm_pro_nonce', 'nonce');
-        $webhook = esc_url_raw($_POST['webhook']);
+        $webhook = trim(esc_url_raw($_POST['webhook']));
 
         if (empty($webhook)) {
             wp_send_json_error(array('message' => 'Please provide your Google Apps Script Webhook URL.'));
@@ -621,7 +627,8 @@ class GM_Admin_Controller {
         $res = wp_remote_post($webhook, array(
             'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
             'body'    => wp_json_encode($payload),
-            'timeout' => 10
+            'timeout' => 10,
+            'blocking'=> true
         ));
 
         if (is_wp_error($res)) {
@@ -630,7 +637,11 @@ class GM_Admin_Controller {
 
         $code = wp_remote_retrieve_response_code($res);
         if (($code >= 200 && $code < 300) || $code === 302) {
-            wp_send_json_success(array('message' => 'Connected successfully! Test row added to your Google Sheet.'));
+            // Auto-persist verified webhook
+            update_option('gm_gs_webhook', $webhook);
+            update_option('gm_gs_active', 1);
+
+            wp_send_json_success(array('message' => 'Connected successfully! Test row added & Webhook automatically saved.'));
         } else {
             wp_send_json_error(array('message' => "Google Apps Script returned HTTP error {$code}. Please verify Web App Deployment settings ('Anyone' access)."));
         }
@@ -1248,7 +1259,7 @@ class GM_Admin_Controller {
                             </div>
 
                             <label class="gm-toggle-box">
-                                <input type="checkbox" name="gm_tg_active" value="1" <?php checked(1, get_option('gm_tg_active'), true); ?> />
+                                <input type="checkbox" name="gm_tg_active" value="1" <?php checked(1, get_option('gm_tg_active', (!empty(get_option('gm_tg_token')) ? 1 : 0)), true); ?> />
                                 <span>Enable Telegram Instant Order Notifications</span>
                             </label>
 
@@ -1970,7 +1981,7 @@ function doPost(e) {
             <!-- Footer Branding & Credits Bar -->
             <div class="gm-footer-credits">
                 <div>
-                    <strong>GM Automate Pro</strong> v4.2.0 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
+                    <strong>GM Automate Pro</strong> v4.2.1 • Developed & Engineered by <a href="https://tamim.growthmark.pro" target="_blank">Tamim Hasan</a>
                 </div>
                 <div>
                     Powered by <a href="https://growthmark.pro" target="_blank">GrowthMark</a>
@@ -2654,9 +2665,15 @@ class GM_Core_Engine {
         // Inject Global Rich Form & Package Listener on Every Front-end Page
         add_action('wp_footer', array(__CLASS__, 'inject_global_draft_listener'), 999);
 
-        // Standard WooCommerce Order Processed Hooks
+        // Standard WooCommerce Order Processed Hooks (Multi-Channel Full Coverage)
         add_action('woocommerce_checkout_order_processed', array(__CLASS__, 'on_wc_order_processed'), 20, 3);
+        add_action('woocommerce_new_order', array(__CLASS__, 'on_wc_new_order'), 20, 2);
+        add_action('woocommerce_thankyou', array(__CLASS__, 'on_wc_thankyou'), 20, 1);
+        add_action('woocommerce_payment_complete', array(__CLASS__, 'on_wc_order_status_change'), 20, 1);
         add_action('woocommerce_order_status_processing', array(__CLASS__, 'on_wc_order_status_change'), 20, 1);
+        add_action('woocommerce_order_status_on-hold', array(__CLASS__, 'on_wc_order_status_change'), 20, 1);
+        add_action('woocommerce_order_status_completed', array(__CLASS__, 'on_wc_order_status_change'), 20, 1);
+        add_action('woocommerce_order_status_pending', array(__CLASS__, 'on_wc_order_status_change'), 20, 1);
 
         // 5-LAYER IRONCLAD CHECKOUT VALIDATION (Stops CartFlows, Classic WC & Block Checkouts)
         add_action('woocommerce_checkout_process', array(__CLASS__, 'validate_wc_checkout_process'));
@@ -3047,28 +3064,28 @@ class GM_Core_Engine {
         foreach ($dispatches as $lead) {
             $clean_phone = preg_replace('/[^0-9]/', '', $lead['phone']);
 
-            if (get_option('gm_tg_active')) {
-                $token   = get_option('gm_tg_token');
-                $chat_id = get_option('gm_tg_chat_id');
-                if (!empty($token) && !empty($chat_id)) {
-                    $wa_link = "https://wa.me/88" . $clean_phone;
-                    $addr_txt = !empty($lead['address']) ? esc_html($lead['address']) : '<i>Incomplete Address</i>';
+            $token   = trim((string) get_option('gm_tg_token'));
+            $chat_id = trim((string) get_option('gm_tg_chat_id'));
+            $tg_on   = get_option('gm_tg_active');
 
-                    $msg = "<b>Abandoned Cart Lead Alert</b>\n\n";
-                    $msg .= "<b>Customer:</b> " . esc_html($lead['name']) . "\n";
-                    $msg .= "<b>Phone:</b> <code>" . $clean_phone . "</code>\n";
-                    $msg .= "<b>Address:</b> " . $addr_txt . "\n";
-                    $msg .= "<b>Interested In:</b> " . esc_html($lead['product']) . "\n";
-                    $msg .= "<b>Time:</b> " . $lead['date'] . "\n";
-                    $msg .= "\n<i>Customer dropped out during checkout. Follow up via WhatsApp or call to close.</i>\n";
-                    $msg .= "\n<a href='{$wa_link}'>Message on WhatsApp ↗</a> | <i>GrowthMark Engine</i>";
+            if (!empty($token) && !empty($chat_id) && ($tg_on || $tg_on === false || $tg_on === null || (int)$tg_on === 1)) {
+                $wa_link = "https://wa.me/88" . $clean_phone;
+                $addr_txt = !empty($lead['address']) ? htmlspecialchars($lead['address'], ENT_QUOTES, 'UTF-8') : '<i>Incomplete Address</i>';
 
-                    wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
-                        'timeout' => 5,
-                        'blocking' => false
-                    ));
-                }
+                $msg = "<b>Abandoned Cart Lead Alert</b>\n\n";
+                $msg .= "<b>Customer:</b> " . htmlspecialchars($lead['name'], ENT_QUOTES, 'UTF-8') . "\n";
+                $msg .= "<b>Phone:</b> <code>" . $clean_phone . "</code>\n";
+                $msg .= "<b>Address:</b> " . $addr_txt . "\n";
+                $msg .= "<b>Interested In:</b> " . htmlspecialchars($lead['product'], ENT_QUOTES, 'UTF-8') . "\n";
+                $msg .= "<b>Time:</b> " . $lead['date'] . "\n";
+                $msg .= "\n<i>Customer dropped out during checkout. Follow up via WhatsApp or call to close.</i>\n";
+                $msg .= "\n<a href='{$wa_link}'>Message on WhatsApp ↗</a> | <i>GrowthMark Engine</i>";
+
+                wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
+                    'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
+                    'timeout'  => 8,
+                    'blocking' => true
+                ));
             }
 
             if (get_option('gm_gs_active')) {
@@ -3117,15 +3134,20 @@ class GM_Core_Engine {
         }
     }
 
-    public static function on_wc_order_processed($order_id, $posted_data, $order) {
+    public static function on_wc_order_processed($order_id, $posted_data = null, $order = null) {
         self::dispatch_automations_safe($order_id, $order);
     }
 
+    public static function on_wc_new_order($order_id, $order = null) {
+        self::dispatch_automations_safe($order_id, $order);
+    }
+
+    public static function on_wc_thankyou($order_id) {
+        self::dispatch_automations_safe($order_id);
+    }
+
     public static function on_wc_order_status_change($order_id) {
-        $order = wc_get_order($order_id);
-        if ($order && !$order->get_meta('_gm_dispatched')) {
-            self::dispatch_automations_safe($order_id, $order);
-        }
+        self::dispatch_automations_safe($order_id);
     }
 
     public static function handle_quick_order() {
@@ -3233,25 +3255,46 @@ class GM_Core_Engine {
             }
             if (!$order) return;
 
+            // Prevent duplicate dispatches across multiple concurrent hooks
+            if ($order->get_meta('_gm_dispatched') === '1') {
+                return;
+            }
+
+            // Extract phone number with fallbacks
+            $raw_phone = $order->get_billing_phone();
+            if (empty($raw_phone)) {
+                $raw_phone = $order->get_shipping_phone();
+            }
+
+            // If order was created empty and customer info is not yet attached, wait for the next hook
+            if (empty($raw_phone)) {
+                return;
+            }
+
+            // Mark as dispatched immediately to prevent race conditions
             $order->update_meta_data('_gm_dispatched', '1');
             $order->save();
 
-            $phone = self::sanitize_bd_phone($order->get_billing_phone());
-            if (!$phone) $phone = $order->get_billing_phone();
+            $clean_phone = self::sanitize_bd_phone($raw_phone);
+            if (!$clean_phone) $clean_phone = preg_replace('/[^0-9]/', '', (string)$raw_phone);
+            if (empty($clean_phone)) $clean_phone = $raw_phone;
 
-            self::mark_lead_converted($phone, $order_id);
+            self::mark_lead_converted($clean_phone, $order_id);
 
-            $name     = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+            $name = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+            if (empty($name)) $name = trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name());
             if (empty($name)) $name = $order->get_formatted_billing_full_name();
             if (empty($name)) $name = 'Valued Customer';
 
-            $address  = $order->get_billing_address_1();
-            if (empty($address)) $address = $order->get_shipping_address_1();
+            $address = trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2());
+            if (empty($address)) $address = trim($order->get_shipping_address_1() . ' ' . $order->get_shipping_address_2());
+            if (empty($address)) $address = 'Not provided';
 
-            $area     = $order->get_billing_city();
+            $area = $order->get_billing_city();
             if (empty($area)) $area = $order->get_shipping_city();
+            if (empty($area)) $area = 'Bangladesh';
 
-            $total    = $order->get_total();
+            $total = $order->get_total();
 
             $products_list = array();
             foreach ($order->get_items() as $i) {
@@ -3268,39 +3311,89 @@ class GM_Core_Engine {
             $products_str = implode(', ', $products_list);
 
             // 1. Telegram Dispatch (Confirmed Order)
-            if (get_option('gm_tg_active')) {
-                $token   = get_option('gm_tg_token');
-                $chat_id = get_option('gm_tg_chat_id');
-                if (!empty($token) && !empty($chat_id)) {
-                    $wa_link = "https://wa.me/88{$phone}";
+            $token   = trim((string) get_option('gm_tg_token'));
+            $chat_id = trim((string) get_option('gm_tg_chat_id'));
+            $tg_on   = get_option('gm_tg_active');
 
-                    $msg = "<b>New Confirmed Order (GM Automate)</b>\n\n";
-                    $msg .= "<b>Order ID:</b> #{$order_id}\n";
-                    $msg .= "<b>Customer:</b> " . esc_html($name) . "\n";
-                    $msg .= "<b>Phone:</b> <code>{$phone}</code>\n";
-                    $msg .= "<b>Address:</b> " . esc_html($address) . "\n";
-                    $msg .= "<b>Product:</b> " . esc_html($products_str) . "\n";
-                    $msg .= "<b>Total Bill:</b> ৳{$total} (COD)\n";
-                    $msg .= "<b>Time:</b> " . current_time('d-M-Y h:i A') . "\n";
-                    $msg .= "\n<a href='{$wa_link}'>Message on WhatsApp ↗</a> | <i>GrowthMark Engine</i>";
+            if (!empty($token) && !empty($chat_id) && ($tg_on || $tg_on === false || $tg_on === null || (int)$tg_on === 1)) {
+                $wa_phone = preg_replace('/[^0-9]/', '', (string)$clean_phone);
+                if (strlen($wa_phone) === 11 && substr($wa_phone, 0, 2) === '01') {
+                    $wa_link = "https://wa.me/88{$wa_phone}";
+                } else {
+                    $wa_link = "https://wa.me/{$wa_phone}";
+                }
 
-                    wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
-                        'body' => array('chat_id' => $chat_id, 'text' => $msg, 'parse_mode' => 'HTML', 'disable_web_page_preview' => true),
-                        'timeout' => 5,
-                        'blocking' => false
+                $safe_name     = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+                $safe_address  = htmlspecialchars($address, ENT_QUOTES, 'UTF-8');
+                $safe_products = htmlspecialchars($products_str, ENT_QUOTES, 'UTF-8');
+
+                $msg = "<b>New Confirmed Order (GM Automate)</b>\n\n";
+                $msg .= "<b>Order ID:</b> #{$order_id}\n";
+                $msg .= "<b>Customer:</b> {$safe_name}\n";
+                $msg .= "<b>Phone:</b> <code>{$clean_phone}</code>\n";
+                $msg .= "<b>Address:</b> {$safe_address}\n";
+                $msg .= "<b>Product:</b> {$safe_products}\n";
+                $msg .= "<b>Total Bill:</b> ৳{$total} (COD)\n";
+                $msg .= "<b>Time:</b> " . current_time('d-M-Y h:i A') . "\n";
+                $msg .= "\n<a href='{$wa_link}'>Message on WhatsApp ↗</a> | <i>GrowthMark Engine</i>";
+
+                $tg_res = wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
+                    'body' => array(
+                        'chat_id'                  => $chat_id,
+                        'text'                     => $msg,
+                        'parse_mode'               => 'HTML',
+                        'disable_web_page_preview' => true
+                    ),
+                    'timeout'  => 10,
+                    'blocking' => true
+                ));
+
+                $is_ok = false;
+                if (!is_wp_error($tg_res) && wp_remote_retrieve_response_code($tg_res) == 200) {
+                    $is_ok = true;
+                } else {
+                    // Fallback to plain text if HTML entity parsing fails
+                    $plain_msg = "New Confirmed Order (GM Automate)\n\n"
+                               . "Order ID: #{$order_id}\n"
+                               . "Customer: {$name}\n"
+                               . "Phone: {$clean_phone}\n"
+                               . "Address: {$address}\n"
+                               . "Product: {$products_str}\n"
+                               . "Total Bill: ৳{$total} (COD)\n"
+                               . "Time: " . current_time('d-M-Y h:i A') . "\n\n"
+                               . "WhatsApp: {$wa_link} | GrowthMark Engine";
+
+                    $fb_res = wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", array(
+                        'body' => array(
+                            'chat_id'                  => $chat_id,
+                            'text'                     => $plain_msg,
+                            'disable_web_page_preview' => true
+                        ),
+                        'timeout'  => 10,
+                        'blocking' => true
                     ));
+                    if (!is_wp_error($fb_res) && wp_remote_retrieve_response_code($fb_res) == 200) {
+                        $is_ok = true;
+                    }
+                }
+
+                if ($is_ok) {
+                    $order->add_order_note('GM Automate: Realtime order alert dispatched to Telegram.');
+                } else {
+                    $err_info = is_wp_error($tg_res) ? $tg_res->get_error_message() : 'HTTP ' . wp_remote_retrieve_response_code($tg_res);
+                    $order->add_order_note('GM Automate Telegram Alert Failed: ' . $err_info);
                 }
             }
 
             // 2. Google Sheets Dispatch
             if (get_option('gm_gs_active')) {
-                $webhook = get_option('gm_gs_webhook');
+                $webhook = trim((string) get_option('gm_gs_webhook'));
                 if (!empty($webhook)) {
                     $payload = array(
                         'date'         => current_time('d-M-Y h:i A'),
                         'order_id'     => '#' . $order_id,
                         'name'         => $name,
-                        'phone'        => $phone,
+                        'phone'        => $clean_phone,
                         'address'      => $address,
                         'area'         => $area,
                         'products'     => $products_str,
@@ -3308,10 +3401,10 @@ class GM_Core_Engine {
                         'status'       => 'Processing'
                     );
                     wp_remote_post($webhook, array(
-                        'headers' => array('Content-Type' => 'application/json; charset=utf-8'),
-                        'body'    => wp_json_encode($payload),
-                        'timeout' => 8,
-                        'blocking'=> false
+                        'headers'  => array('Content-Type' => 'application/json; charset=utf-8'),
+                        'body'     => wp_json_encode($payload),
+                        'timeout'  => 10,
+                        'blocking' => true
                     ));
                 }
             }
