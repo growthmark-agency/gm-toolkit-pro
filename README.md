@@ -1,16 +1,18 @@
-# GM Toolkit Pro â€” Enterprise E-Commerce Automation Suite
+﻿# GM Automate Pro â€” Enterprise E-Commerce & Logistics Engine
 
 Official high-converting WooCommerce automation suite developed by **GrowthMark** (Tamim Hasan).
 
-## ðŸš€ Features
-- âš¡ **1-Click Fast Checkout:** Instant zero-friction ordering with cash-on-delivery support.
-- ðŸ“± **Telegram Merchant Alerts:** Real-time 0.5-second formatted order notifications.
-- ðŸ“Š **Google Sheets Live CRM:** Automated real-time row creation for seamless operations.
-- ðŸšš **Steadfast & Pathao Logistics:** Instant parcel booking and automatic tracking code capture.
-- ðŸ›’ **Global Abandoned Cart Recovery:** Real-time background phone capture across all pages with 1-tap WhatsApp follow-up.
-- ðŸ’¬ **Customer SMS Gateway:** Greenweb / BulkSMSBD / Alpha SMS notifications.
-- ðŸ”„ **GitHub Remote Auto-Updater:** Zero-cost, zero-touch client updates directly from GitHub releases.
+## ðŸš€ Core Modules & Features
+- âš¡ **1-Click Checkout:** Zero-friction, high-speed instant checkout modal & embedded shortcode.
+- ðŸ“± **Instant Telegram Alerts:** Real-time 0.5s order notifications with customer details, order value, and items.
+- ðŸ“Š **Google Sheets Live CRM:** Automated real-time row synchronization with zero delay.
+- ðŸšš **Steadfast & Pathao 1-Click Logistics:** Instant parcel booking, consignment tracking, and live Courier Delivery Success Ratio meter.
+- ðŸ›’ **Smart Abandoned Cart Recovery:** Real-time phone number capture across checkout and product pages with 1-tap WhatsApp follow-up.
+- ðŸ›¡ï¸ **Fraud Shield & Anti-Spam:** Phone number validation, spam order filtering, and blacklist management.
+- ðŸ’¬ **SMS Gateways:** Multi-gateway integration (Greenweb, BulkSMSBD, Alpha SMS) for customer order confirmation.
+- ðŸ”„ **GitHub Auto-Updater:** Built-in seamless update delivery for all client stores.
 
 ---
-- **Author:** [Tamim Hasan](https://tamim.growthmark.pro)  
-- **Agency:** [GrowthMark](https://growthmark.pro)
+**Author:** [Tamim Hasan](https://tamim.growthmark.pro)  
+**Agency:** [GrowthMark](https://growthmark.pro)  
+**Product:** [GM Flow](https://gmflow.growthmark.pro)
